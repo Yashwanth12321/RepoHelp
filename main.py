@@ -4,6 +4,8 @@ sys.path.append(os.path.abspath(os.path.dirname(__file__)))
 
 from backend.retriever import Retriever
 from backend.responder import Responder
+from backend.docgen import extract_defs_from_file, format_for_llm
+
 from memory.chat_history import ChatMemory
 import dotenv
 import json
@@ -89,6 +91,29 @@ def main():
                 response = responder.answer(prompt, top_chunks)
                 print(f"\n How '{feature}' works:\n{response}")
                 chat_memory.add(prompt, response)
+            elif cmd.startswith("/docgen"):
+                parts = cmd.split()
+                if len(parts) != 2:
+                    print("Usage: /docgen <path/to/file.py>")
+                    continue
+
+                file_path = parts[1]
+                if not os.path.exists(file_path):
+                    print(f"❌ File not found: {file_path}")
+                    continue
+
+
+                elements = extract_defs_from_file(file_path)
+                if not elements:
+                    print("⚠️ No functions or classes found.")
+                    continue
+
+                doc_prompt = format_for_llm(elements, file_path)
+                response = responder.summarize(doc_prompt)
+
+                print(f"\n📄 Generated Documentation:\n{response}")
+                chat_memory.add(f"Generate documentation for {file_path}", response)
+
             else :
                 print("Unknown prompt")
 
