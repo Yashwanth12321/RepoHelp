@@ -13,13 +13,11 @@ ModelType = Literal["gemini", "ollama", "local"]
 class Embedder:
     def __init__(self, model: ModelType, ollama_model_name="nomic-embed-text", gemini_api_key=None,local_model_name:str="all-MiniLM-L6-v2"):
         self.model = model
-        self.gemini_key = gemini_api_key
+        self.gemini_key = os.getenv("GEMINI_API_KEY")
         self.ollama_model = ollama_model_name
         self.local_model_name=local_model_name
         if model == "gemini":
-            if not gemini_api_key:
-                raise ValueError("Gemini API key required for Gemini embedding.")
-            self.client=genai.Client(api_key=gemini_api_key)
+            self.client=genai.Client(api_key=self.gemini_key)
         elif model == "ollama":
             if not ollama_model_name:
                 raise ValueError("Ollama model name required for Ollama embedding.")

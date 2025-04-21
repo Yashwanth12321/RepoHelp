@@ -29,7 +29,13 @@ class Responder:
             f"{context}"
         )
 
-        return self._call_llm(prompt)
+        Client = genai.Client(api_key=self.gemini_key)
+
+        response = Client.models.generate_content(
+            model="gemini-2.0-flash",
+            contents=prompt
+        )
+        return response.text
 
     def answer(self, query: str, chunks: List[dict]) -> str:
         context =  "\n\n".join(chunk["content"] for chunk in chunks)

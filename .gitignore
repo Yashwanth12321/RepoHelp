@@ -1,6 +1,6 @@
 .env
 env/
 __pycache__
-test_repo_load.py
 test_retriever.py
 cloned_repo
+cloned_repo2

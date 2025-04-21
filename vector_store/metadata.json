@@ -1,1028 +1,128 @@
 [
   {
-    "file": "./cloned_repo/next.config.ts",
+    "file": "./cloned_repo2/index.js",
     "start_line": 1,
-    "end_line": 7,
-    "content": "import type { NextConfig } from \"next\";\n\nconst nextConfig: NextConfig = {\n  /* config options here */\n};\n\nexport default nextConfig;"
+    "end_line": 20,
+    "content": "document.getElementById('playlist-form').addEventListener('submit', async function (event) {\n    event.preventDefault();\n    \n    // Get the playlist URL from the form\n    const playlistUrl = document.getElementById('playlist').value;\n\n    // Make a GET request to the backend with the playlist URL as a query parameter\n  const response = await fetch(`http://127.0.0.1:5000/get_music?playlist=${encodeURIComponent(playlistUrl)}`, {\n    method: 'GET',\n    headers: {\n        'Content-Type': 'application/json'\n    }\n});\n\n\n    const data = await response.json();\n    console.log(data);\n\n\n    // Populate the music list checkboxes"
   },
   {
-    "file": "./cloned_repo/README.md",
+    "file": "./cloned_repo2/index.js",
+    "start_line": 16,
+    "end_line": 35,
+    "content": "const data = await response.json();\n    console.log(data);\n\n\n    // Populate the music list checkboxes\n    const musicListDiv = document.getElementById('music-list');\n    musicListDiv.innerHTML = '';  // Clear previous content\n    data.forEach((song, index) => {\n        const checkbox = document.createElement('input');\n        checkbox.type = 'checkbox';\n        checkbox.classList.add('song-checkbox');\n        checkbox.name = `${song.track_name}`;\n        checkbox.value = song[\"track_uri\"];\n        checkbox.id = `song-${index}`;\n\n        const label = document.createElement('label');\n        label.htmlFor = `song-${index}`;\n        label.textContent = `${song.track_name} by ${song.artist_name}`;\n\n        const br = document.createElement('br');"
+  },
+  {
+    "file": "./cloned_repo2/index.js",
+    "start_line": 31,
+    "end_line": 50,
+    "content": "const label = document.createElement('label');\n        label.htmlFor = `song-${index}`;\n        label.textContent = `${song.track_name} by ${song.artist_name}`;\n\n        const br = document.createElement('br');\n\n        musicListDiv.appendChild(checkbox);\n        musicListDiv.appendChild(label);\n        musicListDiv.appendChild(br);\n    });\n});\n\ndocument.getElementById('select-all').addEventListener('click', function () {\n    const checkboxes = document.querySelectorAll('#music-list input[type=\"checkbox\"]');\n    checkboxes.forEach(checkbox => checkbox.checked = true);\n});\n\ndocument.getElementById('deselect-all').addEventListener('click', function () {\n    const checkboxes = document.querySelectorAll('#music-list input[type=\"checkbox\"]');\n    checkboxes.forEach(checkbox => checkbox.checked = false);"
+  },
+  {
+    "file": "./cloned_repo2/index.js",
+    "start_line": 46,
+    "end_line": 65,
+    "content": "});\n\ndocument.getElementById('deselect-all').addEventListener('click', function () {\n    const checkboxes = document.querySelectorAll('#music-list input[type=\"checkbox\"]');\n    checkboxes.forEach(checkbox => checkbox.checked = false);\n});\n\n\ndocument.getElementById('download-selected').addEventListener('click', async function () {\n    event.preventDefault();\n    const checkboxes=document.querySelectorAll('#music-list input[type=\"checkbox\"]');\n    const selectedCheckboxes = Array.from(checkboxes).filter(checkbox => checkbox.checked);\n    const selectedSongs = selectedCheckboxes.map(checkbox => checkbox.name);\n    console.log(selectedSongs);\n    console.log(selectedCheckboxes);\n    checkboxes.forEach(checkbox => checkbox.checked = false);\n    for (const song of selectedSongs) {\n         \n\n        const response = await fetch('http://127.0.0.1:5000/download', {"
+  },
+  {
+    "file": "./cloned_repo2/index.js",
+    "start_line": 61,
+    "end_line": 80,
+    "content": "checkboxes.forEach(checkbox => checkbox.checked = false);\n    for (const song of selectedSongs) {\n         \n\n        const response = await fetch('http://127.0.0.1:5000/download', {\n            method: 'POST',\n            headers: {\n                'Content-Type': 'application/json'\n            },\n            body: JSON.stringify({ song: song })\n        })\n        .then(response => response.blob())\n        .then(blob => {\n            const url = window.URL.createObjectURL(blob);\n            const a = document.createElement('a');\n            a.href = url;\n            a.download = `${song}.mp3`;\n            document.body.appendChild(a);\n            a.click();\n            a.remove();"
+  },
+  {
+    "file": "./cloned_repo2/index.js",
+    "start_line": 76,
+    "end_line": 87,
+    "content": "a.href = url;\n            a.download = `${song}.mp3`;\n            document.body.appendChild(a);\n            a.click();\n            a.remove();\n            console.log(blob);\n            console.log(\"mediafile\");\n        });\n    }\n\n\n});"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 1,
+    "end_line": 20,
+    "content": "import spotipy\nfrom spotipy.oauth2 import SpotifyOAuth\nimport requests\nfrom bs4 import BeautifulSoup\nimport youtube_dl\nfrom youtube_search import YoutubeSearch\nimport json\nimport flask\nfrom flask import Flask, request, jsonify, send_file\nfrom flask_cors import CORS\nimport yt_dlp\n\n# Load environment variables from .env file\nimport os\nimport io\nfrom dotenv import load_dotenv\n\n# Load environment variables from .env file\nload_dotenv()"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 16,
+    "end_line": 35,
+    "content": "from dotenv import load_dotenv\n\n# Load environment variables from .env file\nload_dotenv()\n\nclient_Id = os.getenv(\"SPOTIFY_CLIENT_ID\")\nclient_Secret = os.getenv(\"SPOTIFY_CLIENT_SECRET\")\nredirect_Uri = os.getenv(\"REDIRECT_URI\")\nprint(client_Id, client_Secret, redirect_Uri)\n\nsp = spotipy.Spotify(\n    auth_manager=SpotifyOAuth(\n        client_id=client_Id,\n        client_secret=client_Secret,\n        redirect_uri=redirect_Uri,\n        scope=\"playlist-read-private\",\n    )\n)\n\napp = flask.Flask(__name__)"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 31,
+    "end_line": 50,
+    "content": "scope=\"playlist-read-private\",\n    )\n)\n\napp = flask.Flask(__name__)\n# playlist_link = \"https://open.spotify.com/playlist/4bcVnuc14zM9z2WJyQMOaD?si=Pf6CfFgbSwq3LI89U2Triw\"\n\nCORS(app)\n\n\n@app.route(\"/get_music\", methods=[\"GET\"])\ndef get_music():\n    playlist_link = request.args.get(\"playlist\")\n    playlist_URI = playlist_link.split(\"/\")[-1].split(\"?\")[0]\n    track_uris = [x[\"track\"][\"uri\"] for x in sp.playlist_tracks(playlist_URI)[\"items\"]]\n\n    if not playlist_URI:\n        return jsonify({\"error\": \"No playlist URI provided\"}), 400\n    music_data = []"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 46,
+    "end_line": 65,
+    "content": "if not playlist_URI:\n        return jsonify({\"error\": \"No playlist URI provided\"}), 400\n    music_data = []\n\n    for track in sp.playlist_tracks(playlist_URI)[\"items\"]:\n        # URI\n        track_uri = track[\"track\"][\"uri\"]\n\n        # Track name\n        track_name = track[\"track\"][\"name\"]\n\n        # Main Artist\n        artist_uri = track[\"track\"][\"artists\"][0][\"uri\"]\n        artist_info = sp.artist(artist_uri)\n\n        # Name, popularity, genre\n        artist_name = track[\"track\"][\"artists\"][0][\"name\"]\n        artist_pop = artist_info[\"popularity\"]\n        artist_genres = artist_info[\"genres\"]"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 61,
+    "end_line": 80,
+    "content": "# Name, popularity, genre\n        artist_name = track[\"track\"][\"artists\"][0][\"name\"]\n        artist_pop = artist_info[\"popularity\"]\n        artist_genres = artist_info[\"genres\"]\n\n        # Album\n        album = track[\"track\"][\"album\"][\"name\"]\n\n        # Popularity of the track\n        track_pop = track[\"track\"][\"popularity\"]\n\n        # Append track data to the list\n        music_data.append(\n            {\n                \"track_uri\": track_uri,\n                \"track_name\": track_name,\n                \"artist_name\": artist_name,\n                \"artist_popularity\": artist_pop,\n                \"artist_genres\": artist_genres,"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 76,
+    "end_line": 95,
+    "content": "\"track_uri\": track_uri,\n                \"track_name\": track_name,\n                \"artist_name\": artist_name,\n                \"artist_popularity\": artist_pop,\n                \"artist_genres\": artist_genres,\n                \"album\": album,\n                \"track_popularity\": track_pop,\n            }\n        )\n\n    return json.dumps(music_data, indent=4)\n\n\ndef download_mp3(youtube_url):\n    # Specify the output directory where you want to save the media files\n    output_dir = \"musik\"  # Make sure this directory exists or create it\n\n    # Ensure output directory exists\n    if not os.path.exists(output_dir):\n        os.makedirs(output_dir)"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 91,
+    "end_line": 110,
+    "content": "output_dir = \"musik\"  # Make sure this directory exists or create it\n\n    # Ensure output directory exists\n    if not os.path.exists(output_dir):\n        os.makedirs(output_dir)\n\n    # Specify the path to your FFmpeg executable\n    ffmpeg_path = \"C:/ffmpeg-2024-09-19-git-0d5b68c27c-full_build/bin\"  # Change this to your FFmpeg path\n\n    # yt-dlp options\n    ydl_opts = {\n        \"format\": \"bestaudio/best\",\n        \"postprocessors\": [\n            {\n                \"key\": \"FFmpegExtractAudio\",\n                \"preferredcodec\": \"mp3\",\n                \"preferredquality\": \"192\",\n                \"nopostoverwrites\": True,\n            }\n        ],"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 106,
+    "end_line": 125,
+    "content": "\"preferredcodec\": \"mp3\",\n                \"preferredquality\": \"192\",\n                \"nopostoverwrites\": True,\n            }\n        ],\n        \"ffmpeg_location\": ffmpeg_path,  # Set FFmpeg path\n        \"outtmpl\": os.path.join(\n            output_dir, \"%(title)s.%(ext)s\"\n        ),  # Save the file with the title as the name\n        \"quiet\": True,\n    }\n\n    # Download the MP3\n    with yt_dlp.YoutubeDL(ydl_opts) as ydl:\n        try:\n            ydl.download([youtube_url])\n            # After downloading, get the file pat\n            downloaded_file_path = f\"{ydl.prepare_filename({'title': ydl.extract_info(youtube_url, download=False)['title'], 'ext': 'mp3'})}\"\n            return downloaded_file_path  # Return the path of the saved file\n        except yt_dlp.utils.DownloadError as e:"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 121,
+    "end_line": 140,
+    "content": "ydl.download([youtube_url])\n            # After downloading, get the file pat\n            downloaded_file_path = f\"{ydl.prepare_filename({'title': ydl.extract_info(youtube_url, download=False)['title'], 'ext': 'mp3'})}\"\n            return downloaded_file_path  # Return the path of the saved file\n        except yt_dlp.utils.DownloadError as e:\n            print(f\"Error: {e}\")\n            return None\n\n\n@app.route(\"/download\", methods=[\"POST\"])\ndef download():\n    data = request.get_json()\n    track_name = data[\"song\"]\n    results = YoutubeSearch(f\"{track_name}\", max_results=10).to_json()\n    parsed_data = json.loads(results)\n\n    # Extract video IDs\n    video_ids = [video[\"id\"] for video in parsed_data[\"videos\"]]\n\n    if not video_ids:"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 136,
+    "end_line": 155,
+    "content": "# Extract video IDs\n    video_ids = [video[\"id\"] for video in parsed_data[\"videos\"]]\n\n    if not video_ids:\n        return jsonify({\"message\": \"No videos found.\"}), 404\n\n    # Download the MP3 and get the saved file path\n\n    file_path = download_mp3(f\"https://www.youtube.com/watch?v={video_ids[0]}\")\n    file_path = file_path.replace(\"\\\\\", \"/\")\n\n    print(file_path)\n    if file_path:\n        # Send the file to the client\n        return send_file(\n            file_path,\n            mimetype=\"audio/mpeg\",\n            as_attachment=True,\n            download_name=os.path.basename(file_path),"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 151,
+    "end_line": 170,
+    "content": "return send_file(\n            file_path,\n            mimetype=\"audio/mpeg\",\n            as_attachment=True,\n            download_name=os.path.basename(file_path),\n        )\n    else:\n        return jsonify({\"message\": \"Failed to download the audio.\"}), 500\n\n    # buffer.seek(0)  # Go back to the start of the BytesIO buffer\n    # return buffer\n\n\n# results = YoutubeSearch(f'${track_name}', max_results=10).to_json()\n# parsed_data = json.loads(results)\n\n# # Extract video IDs\n# video_ids = [video['id'] for video in parsed_data['videos']]"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 166,
+    "end_line": 185,
+    "content": "# # Extract video IDs\n# video_ids = [video['id'] for video in parsed_data['videos']]\n\n\n# import yt_dlp\n\n# import os\n\n# def download_mp3(youtube_url, output_dir, ffmpeg_location=\"C:/ffmpeg-2024-09-19-git-0d5b68c27c-full_build/bin\"):\n#     # Ensure output directory exists\n#     if not os.path.exists(output_dir):\n#         os.makedirs(output_dir)\n\n#     # yt-dlp options\n#     ydl_opts = {\n#         'format': 'bestaudio/best',\n#         'postprocessors': [{\n#             'key': 'FFmpegExtractAudio',\n#             'preferredcodec': 'mp3',"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 181,
+    "end_line": 200,
+    "content": "#     ydl_opts = {\n#         'format': 'bestaudio/best',\n#         'postprocessors': [{\n#             'key': 'FFmpegExtractAudio',\n#             'preferredcodec': 'mp3',\n#             'preferredquality': '192',\n#         }],\n#         'ffmpeg_location': ffmpeg_location,  # Set the ffmpeg location\n#         'outtmpl': os.path.join(output_dir, '%(title)s.%(ext)s'),\n#     }\n\n#     # Download the mp3\n#     with yt_dlp.YoutubeDL(ydl_opts) as ydl:\n#         try:\n#             ydl.download([youtube_url])\n#         except yt_dlp.utils.DownloadError as e:\n#             print(f\"Error: {e}\")\n\n# # Example usage"
+  },
+  {
+    "file": "./cloned_repo2/main.py",
+    "start_line": 196,
+    "end_line": 210,
+    "content": "#         except yt_dlp.utils.DownloadError as e:\n#             print(f\"Error: {e}\")\n\n# # Example usage\n\n# print(video_ids[0])\n# id=video_ids[0]\n# download_mp3(f\"https://www.youtube.com/watch?v={id}\", \"musik\")\n\n\n# print(video_ids)\n\nif __name__ == \"__main__\":\n\n    app.run(host=\"0.0.0.0\", port=5000, debug=True)"
+  },
+  {
+    "file": "./cloned_repo2/README.md",
     "start_line": 1,
     "end_line": 1,
-    "content": "## Proto"
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\";\n\nimport { HomeIcon} from \"lucide-react\";\nimport Link from \"next/link\";\nimport React from \"react\";\n\nimport { buttonVariants } from \"@/components/ui/button\";\nimport { Separator } from \"@/components/ui/separator\";\nimport {\n  Tooltip,\n  TooltipContent,\n  TooltipProvider,\n  TooltipTrigger,\n} from \"@/components/ui/tooltip\";\nimport { cn } from \"@/lib/utils\";\nimport { Dock, DockIcon } from \"./components/magicui/dock\";\n\nexport type IconProps = React.HTMLAttributes<SVGElement>;\n\nconst Icons = {"
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "import { Dock, DockIcon } from \"./components/magicui/dock\";\n\nexport type IconProps = React.HTMLAttributes<SVGElement>;\n\nconst Icons = {\n \n  x: (props: IconProps) => (\n    <svg viewBox=\"0 0 24 24\" xmlns=\"http://www.w3.org/2000/svg\" {...props}>\n      <title>X</title>\n      <path\n        fill=\"currentColor\"\n        d=\"M18.901 1.153h3.68l-8.04 9.19L24 22.846h-7.406l-5.8-7.584-6.638 7.584H.474l8.6-9.83L0 1.154h7.594l5.243 6.932ZM17.61 20.644h2.039L6.486 3.24H4.298Z\"\n      />\n    </svg>\n  ),\n  youtube: (props: IconProps) => (\n    <svg\n      width=\"32px\"\n      height=\"32px\"\n      viewBox=\"0 0 32 32\""
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "youtube: (props: IconProps) => (\n    <svg\n      width=\"32px\"\n      height=\"32px\"\n      viewBox=\"0 0 32 32\"\n      fill=\"currentColor\"\n      xmlns=\"http://www.w3.org/2000/svg\"\n      {...props}\n    >\n      <title>youtube</title>\n      <path d=\"M29.41,9.26a3.5,3.5,0,0,0-2.47-2.47C24.76,6.2,16,6.2,16,6.2s-8.76,0-10.94.59A3.5,3.5,0,0,0,2.59,9.26,36.13,36.13,0,0,0,2,16a36.13,36.13,0,0,0,.59,6.74,3.5,3.5,0,0,0,2.47,2.47C7.24,25.8,16,25.8,16,25.8s8.76,0,10.94-.59a3.5,3.5,0,0,0,2.47-2.47A36.13,36.13,0,0,0,30,16,36.13,36.13,0,0,0,29.41,9.26ZM13.2,20.2V11.8L20.47,16Z\" />\n    </svg>\n  ),\n  github: (props: IconProps) => (\n    <svg viewBox=\"0 0 438.549 438.549\" {...props}>\n      <path\n        fill=\"currentColor\"\n        d=\"M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z\"\n      ></path>\n    </svg>"
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "<path\n        fill=\"currentColor\"\n        d=\"M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z\"\n      ></path>\n    </svg>\n  ),\n};\n\nconst DATA = {\n  navbar: [\n    { href: \"/\", icon: HomeIcon, label: \"Home\" },\n  ],\n  contact: {\n    social: {\n      GitHub: {\n        name: \"GitHub\",\n        url: \"https://github.com/Yashwanth12321\",\n        icon: Icons.github,\n      },\n      X: {"
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "name: \"GitHub\",\n        url: \"https://github.com/Yashwanth12321\",\n        icon: Icons.github,\n      },\n      X: {\n        name: \"X\",\n        url: \"https://x.com/seneca_codes\",\n        icon: Icons.x,\n      },\n    },\n  },\n};\n\nexport function Navdock() {\n  return (\n    <div className=\"flex flex-col items-center justify-center\">\n      <TooltipProvider>\n        <Dock direction=\"middle\">\n          {DATA.navbar.map((item) => (\n            <DockIcon key={item.label}>"
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 76,
-    "end_line": 95,
-    "content": "<div className=\"flex flex-col items-center justify-center\">\n      <TooltipProvider>\n        <Dock direction=\"middle\">\n          {DATA.navbar.map((item) => (\n            <DockIcon key={item.label}>\n              <Tooltip>\n                <TooltipTrigger asChild>\n                  <Link\n                    href={item.href}\n                    aria-label={item.label}\n                    className={cn(\n                      buttonVariants({ variant: \"ghost\", size: \"icon\" }),\n                      \"size-12 rounded-full\",\n                    )}\n                  >\n                    <item.icon className=\"size-4\" />\n                  </Link>\n                </TooltipTrigger>\n                <TooltipContent>\n                  <p>{item.label}</p>"
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 91,
-    "end_line": 110,
-    "content": "<item.icon className=\"size-4\" />\n                  </Link>\n                </TooltipTrigger>\n                <TooltipContent>\n                  <p>{item.label}</p>\n                </TooltipContent>\n              </Tooltip>\n            </DockIcon>\n          ))}\n          <Separator orientation=\"vertical\" className=\"h-full\" />\n          {Object.entries(DATA.contact.social).map(([name, social]) => (\n            <DockIcon key={name}>\n              <Tooltip>\n                <TooltipTrigger asChild>\n                  <Link\n                    href={social.url}\n                    aria-label={social.name}\n                    className={cn(\n                      buttonVariants({ variant: \"ghost\", size: \"icon\" }),\n                      \"size-12 rounded-full\","
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 106,
-    "end_line": 125,
-    "content": "href={social.url}\n                    aria-label={social.name}\n                    className={cn(\n                      buttonVariants({ variant: \"ghost\", size: \"icon\" }),\n                      \"size-12 rounded-full\",\n                    )}\n                  >\n                    <social.icon className=\"size-4\" />\n                  </Link>\n                </TooltipTrigger>\n                <TooltipContent>\n                  <p>{name}</p>\n                </TooltipContent>\n              </Tooltip>\n            </DockIcon>\n          ))}\n        </Dock>\n      </TooltipProvider>\n    </div>\n  );"
-  },
-  {
-    "file": "./cloned_repo/src/Navdock.tsx",
-    "start_line": 121,
-    "end_line": 126,
-    "content": "))}\n        </Dock>\n      </TooltipProvider>\n    </div>\n  );\n}"
-  },
-  {
-    "file": "./cloned_repo/src/app/layout.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "import type { Metadata } from \"next\";\nimport \"./globals.css\";\nimport { Navdock } from \"@/Navdock\";\n\nimport { Quantico } from \"next/font/google\";\n\nexport const quantico = Quantico({\n    weight: \"400\",\n    style: \"normal\",\n    subsets: [\"latin\"],\n  });\n\nexport const metadata: Metadata = {\n  title: \"Portfolio\",\n  description: \"Yashwanth Napa's portfolio\",\n  icons : {\n    icon: '/favicon.png',\n  },\n};"
-  },
-  {
-    "file": "./cloned_repo/src/app/layout.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "icons : {\n    icon: '/favicon.png',\n  },\n};\n\nexport default function RootLayout({\n  children,\n}: Readonly<{\n  children: React.ReactNode;\n}>) {\n  return (\n<html lang=\"en\">\n  <body className={`${quantico.className} antialiased`}>\n    <div className=\"fixed bottom-10 left-0 w-full z-50\">\n      <Navdock />\n    </div>\n    {children}\n  </body>\n</html>"
-  },
-  {
-    "file": "./cloned_repo/src/app/layout.tsx",
-    "start_line": 31,
-    "end_line": 37,
-    "content": "</div>\n    {children}\n  </body>\n</html>\n\n  );\n}"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "'use client';\n\nimport * as motion from \"motion/react-client\"\nimport { Experience, experiences } from \"@/data/experience\";\nimport Image from 'next/image';\nimport { projects, Project } from \"@/data/projects\";\nimport { ProjectCard } from \"@/components/ProjectCard\";\nimport Link from \"next/link\";\nimport Footer from \"@/components/footer\";\nimport { useState } from \"react\";\nimport Dino from \"@/design/Dino\";\nimport { ChevronRight } from \"lucide-react\";\nimport { skills } from \"@/data/skills\";\nimport { skill } from \"@/data/skills\";\nimport { Badge } from \"@/components/ui/badge\"\n\n\nexport default function Home() {\n  const transition = {\n    duration: 0.6,"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "export default function Home() {\n  const transition = {\n    duration: 0.6,\n    delay: 0.3,\n\n    ease: \"easeInOut\"\n  }\n\n  const [openDrawer, setOpenDrawer] = useState<string | null>(null);\n\n  const toggleDrawer = (company: string) => {\n    if (openDrawer === company) setOpenDrawer(null);\n    else setOpenDrawer(company);\n  }\n\n  return (\n    <motion.main initial={{ opacity: 1, filter: \"blur(10px) y:20\" }} animate={{ opacity: 1, filter: \"blur(0px) y:0\" }} exit={{ opacity: 1, filter: \"blur(10px)\" }} transition={transition}>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "}\n\n  return (\n    <motion.main initial={{ opacity: 1, filter: \"blur(10px) y:20\" }} animate={{ opacity: 1, filter: \"blur(0px) y:0\" }} exit={{ opacity: 1, filter: \"blur(10px)\" }} transition={transition}>\n\n\n      <div className=\"max-w-3xl mt-10 mx-auto px-4\">\n\n        <div className=\"flex items-center justify-between\">\n          <motion.div\n            initial={{ opacity: 0, filter: \"blur(10px)\" }}\n            animate={{\n              opacity: [0, 1, 1],\n              filter: [\"blur(10px)\", \"blur(10px)\", \"blur(0px)\"]\n            }}\n            transition={{ delay: 0.2, duration: 0.6, times: [0, 0.666, 1] }}\n          >\n            <div className=\"flex items-center space-x-4\">\n              <Link href=\"/\" className=\"text-lg hover:underline hover:text-blue-500 transition-all\">Home</Link>\n              <Link href=\"/learnings\" className=\"text-lg hover:underline hover:text-blue-500 transition-all\">Learnings</Link>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "transition={{ delay: 0.2, duration: 0.6, times: [0, 0.666, 1] }}\n          >\n            <div className=\"flex items-center space-x-4\">\n              <Link href=\"/\" className=\"text-lg hover:underline hover:text-blue-500 transition-all\">Home</Link>\n              <Link href=\"/learnings\" className=\"text-lg hover:underline hover:text-blue-500 transition-all\">Learnings</Link>\n            </div>\n          </motion.div>\n\n        </div>\n\n        <motion.div\n          initial={{ opacity: 0, filter: \"blur(10px)\" }}\n          animate={{\n            opacity: [0, 1, 1],\n            filter: [\"blur(10px)\", \"blur(10px)\", \"blur(0px)\"]\n          }}\n          transition={{\n            delay: 0.2,\n            duration: 0.6,\n            times: [0, 0.666, 1],"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "}}\n          transition={{\n            delay: 0.2,\n            duration: 0.6,\n            times: [0, 0.666, 1],\n          }}\n        >\n          <div className=\"flex flex-col items-center justify-center pt-10 \">\n            <div className=\"\">\n              <Image className=\"rounded-full w-20\" src=\"/seneca.png\" alt=\"seneca\" width={40} height={40} />\n            </div>\n            <div className=\"flex flex-col items-center\">\n              <h1 className=\"text-2xl\">Yashwanth Napa</h1>\n              <p className=\"text-lg\">Engineer</p>\n\n              <div className=\"flex items-center space-x-4 mt-4\">\n                {/* \"I like\" section */}\n                <div className=\"text-xl sm:text-2xl md:text-3xl font-bold flex items-center flex-[1]\">\n                  <h4>I like</h4>\n                </div>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 76,
-    "end_line": 95,
-    "content": "<div className=\"flex items-center space-x-4 mt-4\">\n                {/* \"I like\" section */}\n                <div className=\"text-xl sm:text-2xl md:text-3xl font-bold flex items-center flex-[1]\">\n                  <h4>I like</h4>\n                </div>\n\n\n                {/* Description section */}\n                <div className=\"flex flex-col gap-2 flex-[5] sm:text-sm md:text-lg lg:text-lg text-gray-400\">\n                  <p>Building stuff that is useful or fun</p>\n                  <p>Exploring web dev, AI/ML, security, game dev, and more</p>\n                  <p>Reading books</p>\n                </div>\n              </div>\n\n            </div>\n\n\n          </div>\n          <br />"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 91,
-    "end_line": 110,
-    "content": "</div>\n\n\n          </div>\n          <br />\n          <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n          <br />\n        </motion.div>\n\n        <motion.div\n          initial={{ opacity: 0, filter: \"blur(10px)\" }}\n          animate={{\n            opacity: [0, 1, 1],\n            filter: [\"blur(10px)\", \"blur(10px)\", \"blur(0px)\"]\n          }}\n          transition={{ delay: 0.4, duration: 0.3, times: [0, 0.666, 1], }}\n        >\n          <div className=\"flex flex-col items-center\">\n            <div className=\"flex flex-col items-center\">\n              <h1 className=\"text-2xl font-bold\"> Work experience</h1>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 106,
-    "end_line": 125,
-    "content": "transition={{ delay: 0.4, duration: 0.3, times: [0, 0.666, 1], }}\n        >\n          <div className=\"flex flex-col items-center\">\n            <div className=\"flex flex-col items-center\">\n              <h1 className=\"text-2xl font-bold\"> Work experience</h1>\n\n            </div>\n            <div className=\"w-full \">\n              {experiences.map((exp: Experience) => (\n\n                <div onClick={() => toggleDrawer(exp.company)} key={exp.company} className=\" flex flex-row space-x-2 md:space-x-4   mb-4 mt-4 border border-zinc-800 rounded-md p-3 md:p-6 hover:scale-105 transition-all   \">\n                  <div className=\"flex items-center\">\n                    <Image\n                      src=\"/SRF-logo.png\"\n                      alt={exp.company}\n                      width={45}\n                      height={45}\n                      className=\"min-w-[45px] min-h-[45px] w-[45px] h-[45px] rounded-full\"\n                    />\n                  </div>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 121,
-    "end_line": 140,
-    "content": "width={45}\n                      height={45}\n                      className=\"min-w-[45px] min-h-[45px] w-[45px] h-[45px] rounded-full\"\n                    />\n                  </div>\n\n\n\n                  <div className=\"flex flex-col \">\n                    <div className=\"flex flex-row  justify-between w-full \">\n                      <div className=\"w-full\">\n                        <div className=\"flex flex-row  justify-between \">\n                          <h2 className=\"font-bold underline hover:no-underline  sm:text-md md:text-lg lg:text-lg \">\n                            {exp.company}\n                          </h2>\n                          <h3 className=\"text-[11px] sm:text-[11px] md:text-lg lg:text-sm text-gray-400\">{exp.startDate} - {exp.endDate}</h3>\n                        </div>\n                        <p className=\"text-[14px] sm:text-[14px] md:text-lg lg:text-sm text-gray-400\">\n                          {exp.title}\n                        </p>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 136,
-    "end_line": 155,
-    "content": "<h3 className=\"text-[11px] sm:text-[11px] md:text-lg lg:text-sm text-gray-400\">{exp.startDate} - {exp.endDate}</h3>\n                        </div>\n                        <p className=\"text-[14px] sm:text-[14px] md:text-lg lg:text-sm text-gray-400\">\n                          {exp.title}\n                        </p>\n                      </div>\n                      <ChevronRight\n                        className={`transition-transform duration-300 ${openDrawer === exp.company ? \"rotate-90\" : \"rotate-0\"\n                          }`}\n                      />\n                    </div>\n\n                    <div\n                      className={`transition-all duration-700 ease-in-out overflow-hidden ${openDrawer === exp.company ? \"max-h-96 opacity-100\" : \"max-h-0 opacity-0\"\n                        }`}\n                    >\n                      <ul className=\"text-sm list-disc text-zinc-600 ml-4 mt-2\">\n                        {exp.description.map((desc: string) => (\n                          <li key={desc}>{desc}</li>\n                        ))}"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 151,
-    "end_line": 170,
-    "content": ">\n                      <ul className=\"text-sm list-disc text-zinc-600 ml-4 mt-2\">\n                        {exp.description.map((desc: string) => (\n                          <li key={desc}>{desc}</li>\n                        ))}\n                      </ul>\n                    </div>\n\n\n                  </div>\n\n\n                </div>\n              ))}\n            </div>\n          </div>\n        <br />\n        <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n        <br />\n        </motion.div>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 166,
-    "end_line": 185,
-    "content": "</div>\n        <br />\n        <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n        <br />\n        </motion.div>\n\n        <motion.div \n        initial={{opacity:0, filter:\"blur(10px)\"}}\n        animate={{\n          opacity:[0,1,1],\n          filter:[\"blur(10px)\",\"blur(10px)\",\"blur(0px)\"]\n        }}\n        transition={{\n          delay:0.5,\n          duration:0.2,\n          times:[0,0.666,1] \n        }}\n        >\n        <div className=\"flex flex-col items-center\">\n          <h1 className=\"text-2xl\">Skills</h1>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 181,
-    "end_line": 200,
-    "content": "times:[0,0.666,1] \n        }}\n        >\n        <div className=\"flex flex-col items-center\">\n          <h1 className=\"text-2xl\">Skills</h1>\n        </div>\n        <div className=\"flex flex-row flex-wrap justify-start gap-2 rounded-md p-3 md:p-6\">\n          {skills.map((skill: skill) => (\n            <div key={skill.name} className=\"flex flex-col items-center  md:space-x-4 lg:space-x-6 \">\n              <Badge variant=\"secondary\" className=\"hover:scale-105 transition-all\" style={{ borderRadius: \"5px\"}}>{skill.name}</Badge>\n            </div>\n          ))}\n        </div>\n        <br />\n        <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n        <br />\n        </motion.div>\n\n        <motion.div\n          initial={{ opacity: 0, filter: \"blur(10px)\" }}"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 196,
-    "end_line": 215,
-    "content": "<br />\n        </motion.div>\n\n        <motion.div\n          initial={{ opacity: 0, filter: \"blur(10px)\" }}\n          animate={{\n            opacity: [0, 1, 1],\n            filter: [\"blur(10px)\", \"blur(10px)\", \"blur(0px)\"]\n          }}\n          transition={{ delay: 0.7, duration: 0.3, times: [0, 0.666, 1] }}\n        >\n          <br />\n          <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n          <br />\n          <div className=\"flex flex-col items-center\">\n            <h1 className=\"text-2xl\">Some things I have built</h1>\n\n            {/* Grid Layout */}\n            <div className=\"grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 mt-4\">"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 211,
-    "end_line": 230,
-    "content": "<h1 className=\"text-2xl\">Some things I have built</h1>\n\n            {/* Grid Layout */}\n            <div className=\"grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4 mt-4\">\n\n              {projects.map((project: Project) => (\n                <div key={project.title}>\n                  <ProjectCard project={project} />\n\n                </div>\n              ))}\n\n              <Link className=\"flex flex-col items-center justify-center space-y-4 border border-zinc-800 rounded-md p-6 hover:scale-105 transition-all\" href=\"/projects\">\n                Checkout other stuff\n              </Link>\n            </div>\n          </div>\n        <br />\n        <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n        <br />"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 226,
-    "end_line": 245,
-    "content": "</div>\n          </div>\n        <br />\n        <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n        <br />\n        </motion.div>\n\n        <motion.div\n          initial={{ opacity: 0, filter: \"blur(10px)\" }}\n          animate={{\n            opacity: [0, 1, 1],\n            filter: [\"blur(10px)\", \"blur(10px)\", \"blur(0px)\"]\n          }}\n          transition={{ delay: 1.1, duration: 0.3, times: [0, 0.666, 1] }}\n        >\n          <div className=\"\">\n            <div className=\"\">\n              <Dino />\n\n            </div>"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 241,
-    "end_line": 260,
-    "content": "<div className=\"\">\n            <div className=\"\">\n              <Dino />\n\n            </div>\n\n          </div>\n        </motion.div>\n        <br />\n      </div>\n      <motion.div\n          initial={{ opacity: 0, filter: \"blur(10px)\" }}\n          animate={{\n            opacity: [0, 1, 1],\n            filter: [\"blur(10px)\", \"blur(10px)\", \"blur(0px)\"]\n          }}\n          transition={{ delay: 1.4, duration: 0.3, times: [0, 0.666, 1] }}\n        >\n\n      <br />"
-  },
-  {
-    "file": "./cloned_repo/src/app/page.tsx",
-    "start_line": 256,
-    "end_line": 273,
-    "content": "}}\n          transition={{ delay: 1.4, duration: 0.3, times: [0, 0.666, 1] }}\n        >\n\n      <br />\n      <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n      <br />\n      <br />\n      <br />\n      <Footer />\n      </motion.div>\n    </motion.main>\n  );\n}"
-  },
-  {
-    "file": "./cloned_repo/src/app/about/page.tsx",
-    "start_line": 1,
-    "end_line": 11,
-    "content": "import UnderConstruction from \"@/components/pages/UnderConstruction\"\n\n\nexport default function About() {\n    return (\n        <div className=\"flex flex-col items-center justify-center\">\n            <h1>About</h1>\n            <UnderConstruction />\n        </div>\n    )\n}"
-  },
-  {
-    "file": "./cloned_repo/src/app/learnings/page.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "import { cracked } from \"@/data/cracked\"\n\nconst Learnings = () => {\n\n    return (\n        <div>\n            <div className=\"max-w-3xl mt-10 mx-auto px-4 text-center\">\n                <h1 className=\"text-3xl font-bold\">Smart People i follow</h1>\n                <br />\n                <hr className=\"w-full h-0.5 bg-gradient-to-r from-transparent via-gray-500 to-transparent border-0\" />\n                <br />\n                <div className=\"flex flex-col text-left\">\n                    {\n                        cracked.map((cracked) => (\n                            <div key={cracked.name}>\n                                <h1 className=\"text-lg font-bold text-green-500\">{cracked.name}</h1>\n                                <a className=\"hover:underline hover:text-blue-500\" href={cracked.link}>{cracked.link}</a>\n                                <p>{cracked.about}</p>\n                                <br />\n                            </div>"
-  },
-  {
-    "file": "./cloned_repo/src/app/learnings/page.tsx",
-    "start_line": 16,
-    "end_line": 29,
-    "content": "<h1 className=\"text-lg font-bold text-green-500\">{cracked.name}</h1>\n                                <a className=\"hover:underline hover:text-blue-500\" href={cracked.link}>{cracked.link}</a>\n                                <p>{cracked.about}</p>\n                                <br />\n                            </div>\n                        ))\n                    }\n                </div>\n            </div>\n        </div>\n    )\n}\n\nexport default Learnings"
-  },
-  {
-    "file": "./cloned_repo/src/app/projects/page.tsx",
-    "start_line": 1,
-    "end_line": 9,
-    "content": "\"use client\";\n\nexport default function Projects() {\n    return (\n        <div>\n            <h1>Under Construction</h1>\n        </div>\n    )\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/AnalogClock.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\nimport { useEffect, useState } from 'react';\nimport Clock from 'react-clock';\n\nexport default function AnalogClock() {\n  const [value, setValue] = useState(new Date());\n\n  useEffect(() => {\n    const interval = setInterval(() => setValue(new Date()), 1000);\n\n    return () => {\n      clearInterval(interval);\n    };\n  }, []);\n\n  return (\n    <div>\n      <p>Current time:</p>\n      <Clock value={value} />\n    </div>"
-  },
-  {
-    "file": "./cloned_repo/src/components/AnalogClock.tsx",
-    "start_line": 16,
-    "end_line": 22,
-    "content": "return (\n    <div>\n      <p>Current time:</p>\n      <Clock value={value} />\n    </div>\n  );\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "// \"use client\";\n\n// import { useEffect, useRef, useState } from 'react';\n// import CactiController from \"../design/dino-game-main/CactiController.js\"\n// import Ground from \"../design/dino-game-main/Ground.js\"\n// import Player from \"../design/dino-game-main/Player.js\"\n// import Score from \"../design/dino-game-main/Score.js\"\n\n\n// // Game constants\n// const GAME_SPEED_START = 1;\n// const GAME_SPEED_INCREMENT = 0.00001;\n// const GAME_WIDTH = 800;\n// const GAME_HEIGHT = 200;\n// const PLAYER_WIDTH = 88 / 1.5;\n// const PLAYER_HEIGHT = 94 / 1.5;\n// const MAX_JUMP_HEIGHT = GAME_HEIGHT;\n// const MIN_JUMP_HEIGHT = 150;\n// const GROUND_WIDTH = 2400;\n// const GROUND_HEIGHT = 24;"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "// const PLAYER_HEIGHT = 94 / 1.5;\n// const MAX_JUMP_HEIGHT = GAME_HEIGHT;\n// const MIN_JUMP_HEIGHT = 150;\n// const GROUND_WIDTH = 2400;\n// const GROUND_HEIGHT = 24;\n// const GROUND_AND_CACTUS_SPEED = 0.5;\n\n// const CACTI_CONFIG = [\n//   { width: 48 / 1.5, height: 100 / 1.5, image: \"/images/cactus_1.png\" },\n//   { width: 98 / 1.5, height: 100 / 1.5, image: \"/images/cactus_2.png\" },\n//   { width: 68 / 1.5, height: 70 / 1.5, image: \"/images/cactus_3.png\" },\n// ];\n\n// export default function Dino() {\n//   const canvasRef = useRef(null);\n//   const [gameState, setGameState] = useState({\n//     gameOver: false,\n//     waitingToStart: true,\n//     hasAddedEventListenersForRestart: false,\n//     gameSpeed: GAME_SPEED_START"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "//   const [gameState, setGameState] = useState({\n//     gameOver: false,\n//     waitingToStart: true,\n//     hasAddedEventListenersForRestart: false,\n//     gameSpeed: GAME_SPEED_START\n//   });\n\n//   // Game objects (need to be in refs to persist across renders)\n//   const playerRef = useRef(null);\n//   const groundRef = useRef(null);\n//   const cactiControllerRef = useRef(null);\n//   const scoreRef = useRef(null);\n//   const scaleRatioRef = useRef(null);\n//   const previousTimeRef = useRef(null);\n//   const requestIdRef = useRef(null);\n\n//   const getScaleRatio = () => {\n//     const screenHeight = Math.min(\n//       window.innerHeight,\n//       document.documentElement.clientHeight"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "//   const getScaleRatio = () => {\n//     const screenHeight = Math.min(\n//       window.innerHeight,\n//       document.documentElement.clientHeight\n//     );\n\n//     const screenWidth = Math.min(\n//       window.innerWidth,\n//       document.documentElement.clientWidth\n//     );\n\n//     if (screenWidth / screenHeight < GAME_WIDTH / GAME_HEIGHT) {\n//       return screenWidth / GAME_WIDTH;\n//     } else {\n//       return screenHeight / GAME_HEIGHT;\n//     }\n//   };\n\n//   const createSprites = (ctx) => {"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "//       return screenHeight / GAME_HEIGHT;\n//     }\n//   };\n\n//   const createSprites = (ctx) => {\n//     const scaleRatio = scaleRatioRef.current;\n    \n//     const playerWidthInGame = PLAYER_WIDTH * scaleRatio;\n//     const playerHeightInGame = PLAYER_HEIGHT * scaleRatio;\n//     const minJumpHeightInGame = MIN_JUMP_HEIGHT * scaleRatio;\n//     const maxJumpHeightInGame = MAX_JUMP_HEIGHT * scaleRatio;\n\n//     const groundWidthInGame = GROUND_WIDTH * scaleRatio;\n//     const groundHeightInGame = GROUND_HEIGHT * scaleRatio;\n\n//     playerRef.current = new Player(\n//       ctx,\n//       playerWidthInGame,\n//       playerHeightInGame,\n//       minJumpHeightInGame,"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 76,
-    "end_line": 95,
-    "content": "//     playerRef.current = new Player(\n//       ctx,\n//       playerWidthInGame,\n//       playerHeightInGame,\n//       minJumpHeightInGame,\n//       maxJumpHeightInGame,\n//       scaleRatio\n//     );\n\n//     groundRef.current = new Ground(\n//       ctx,\n//       groundWidthInGame,\n//       groundHeightInGame,\n//       GROUND_AND_CACTUS_SPEED,\n//       scaleRatio\n//     );\n\n//     const cactiImages = CACTI_CONFIG.map((cactus) => {\n//       const image = new Image();\n//       image.src = cactus.image;"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 91,
-    "end_line": 110,
-    "content": "//     );\n\n//     const cactiImages = CACTI_CONFIG.map((cactus) => {\n//       const image = new Image();\n//       image.src = cactus.image;\n//       return {\n//         image: image,\n//         width: cactus.width * scaleRatio,\n//         height: cactus.height * scaleRatio,\n//       };\n//     });\n\n//     cactiControllerRef.current = new CactiController(\n//       ctx,\n//       cactiImages,\n//       scaleRatio,\n//       GROUND_AND_CACTUS_SPEED\n//     );\n\n//     scoreRef.current = new Score(ctx, scaleRatio);"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 106,
-    "end_line": 125,
-    "content": "//       scaleRatio,\n//       GROUND_AND_CACTUS_SPEED\n//     );\n\n//     scoreRef.current = new Score(ctx, scaleRatio);\n//   };\n\n//   const setScreen = () => {\n//     const canvas = canvasRef.current;\n//     if (!canvas) return;\n\n//     const ctx = canvas.getContext(\"2d\");\n//     scaleRatioRef.current = getScaleRatio();\n//     canvas.width = GAME_WIDTH * scaleRatioRef.current;\n//     canvas.height = GAME_HEIGHT * scaleRatioRef.current;\n//     createSprites(ctx);\n//   };\n\n//   const showGameOver = (ctx) => {\n//     const fontSize = 70 * scaleRatioRef.current;"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 121,
-    "end_line": 140,
-    "content": "//     createSprites(ctx);\n//   };\n\n//   const showGameOver = (ctx) => {\n//     const fontSize = 70 * scaleRatioRef.current;\n//     ctx.font = `${fontSize}px Verdana`;\n//     ctx.fillStyle = \"grey\";\n//     const x = canvasRef.current.width / 4.5;\n//     const y = canvasRef.current.height / 2;\n//     ctx.fillText(\"GAME OVER\", x, y);\n//   };\n\n//   const setupGameReset = () => {\n//     if (!gameState.hasAddedEventListenersForRestart) {\n//       setGameState(prev => ({ ...prev, hasAddedEventListenersForRestart: true }));\n\n//       setTimeout(() => {\n//         window.addEventListener(\"keyup\", reset, { once: true });\n//         window.addEventListener(\"touchstart\", reset, { once: true });\n//       }, 1000);"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 136,
-    "end_line": 155,
-    "content": "//       setTimeout(() => {\n//         window.addEventListener(\"keyup\", reset, { once: true });\n//         window.addEventListener(\"touchstart\", reset, { once: true });\n//       }, 1000);\n//     }\n//   };\n\n//   const reset = () => {\n//     setGameState({\n//       hasAddedEventListenersForRestart: false,\n//       gameOver: false,\n//       waitingToStart: false,\n//       gameSpeed: GAME_SPEED_START\n//     });\n    \n//     groundRef.current.reset();\n//     cactiControllerRef.current.reset();\n//     scoreRef.current.reset();\n//   };"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 151,
-    "end_line": 170,
-    "content": "//     groundRef.current.reset();\n//     cactiControllerRef.current.reset();\n//     scoreRef.current.reset();\n//   };\n\n//   const showStartGameText = (ctx) => {\n//     const fontSize = 40 * scaleRatioRef.current;\n//     ctx.font = `${fontSize}px Verdana`;\n//     ctx.fillStyle = \"grey\";\n//     const x = canvasRef.current.width / 14;\n//     const y = canvasRef.current.height / 2;\n//     ctx.fillText(\"Tap Screen or Press Space To Start\", x, y);\n//   };\n\n//   const updateGameSpeed = (frameTimeDelta) => {\n//     setGameState(prev => ({\n//       ...prev,\n//       gameSpeed: prev.gameSpeed + frameTimeDelta * GAME_SPEED_INCREMENT\n//     }));"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 166,
-    "end_line": 185,
-    "content": "//   const updateGameSpeed = (frameTimeDelta) => {\n//     setGameState(prev => ({\n//       ...prev,\n//       gameSpeed: prev.gameSpeed + frameTimeDelta * GAME_SPEED_INCREMENT\n//     }));\n//   };\n\n//   const clearScreen = (ctx) => {\n//     ctx.fillStyle = \"white\";\n//     ctx.fillRect(0, 0, canvasRef.current.width, canvasRef.current.height);\n//   };\n\n//   const gameLoop = (currentTime) => {\n//     const canvas = canvasRef.current;\n//     if (!canvas) return;\n    \n//     const ctx = canvas.getContext(\"2d\");\n    \n//     if (previousTimeRef.current === null) {\n//       previousTimeRef.current = currentTime;"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 181,
-    "end_line": 200,
-    "content": "//     const ctx = canvas.getContext(\"2d\");\n    \n//     if (previousTimeRef.current === null) {\n//       previousTimeRef.current = currentTime;\n//       requestIdRef.current = requestAnimationFrame(gameLoop);\n//       return;\n//     }\n    \n//     const frameTimeDelta = currentTime - previousTimeRef.current;\n//     previousTimeRef.current = currentTime;\n\n//     clearScreen(ctx);\n\n//     if (!gameState.gameOver && !gameState.waitingToStart) {\n//       // Update game objects\n//       groundRef.current.update(gameState.gameSpeed, frameTimeDelta);\n//       cactiControllerRef.current.update(gameState.gameSpeed, frameTimeDelta);\n//       playerRef.current.update(gameState.gameSpeed, frameTimeDelta);\n//       scoreRef.current.update(frameTimeDelta);"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 196,
-    "end_line": 215,
-    "content": "//       // Update game objects\n//       groundRef.current.update(gameState.gameSpeed, frameTimeDelta);\n//       cactiControllerRef.current.update(gameState.gameSpeed, frameTimeDelta);\n//       playerRef.current.update(gameState.gameSpeed, frameTimeDelta);\n//       scoreRef.current.update(frameTimeDelta);\n//       updateGameSpeed(frameTimeDelta);\n//     }\n\n//     if (!gameState.gameOver && cactiControllerRef.current.collideWith(playerRef.current)) {\n//       setGameState(prev => ({ ...prev, gameOver: true }));\n//       setupGameReset();\n//       scoreRef.current.setHighScore();\n//     }\n\n//     // Draw game objects\n//     groundRef.current.draw();\n//     cactiControllerRef.current.draw();\n//     playerRef.current.draw();\n//     scoreRef.current.draw();"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 211,
-    "end_line": 230,
-    "content": "//     groundRef.current.draw();\n//     cactiControllerRef.current.draw();\n//     playerRef.current.draw();\n//     scoreRef.current.draw();\n\n//     if (gameState.gameOver) {\n//       showGameOver(ctx);\n//     }\n\n//     if (gameState.waitingToStart) {\n//       showStartGameText(ctx);\n//     }\n\n//     requestIdRef.current = requestAnimationFrame(gameLoop);\n//   };\n\n//   // Initialize game\n//   useEffect(() => {\n//     setScreen();"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 226,
-    "end_line": 245,
-    "content": "//   // Initialize game\n//   useEffect(() => {\n//     setScreen();\n    \n//     // Start the game loop\n//     requestIdRef.current = requestAnimationFrame(gameLoop);\n    \n//     // Initial event listeners for starting the game\n//     const handleStart = () => reset();\n//     window.addEventListener(\"keyup\", handleStart, { once: true });\n//     window.addEventListener(\"touchstart\", handleStart, { once: true });\n    \n//     // Handle resize events\n//     const handleResize = () => setTimeout(setScreen, 500);\n//     window.addEventListener(\"resize\", handleResize);\n    \n//     if (typeof window !== 'undefined' && window.screen?.orientation) {\n//       window.screen.orientation.addEventListener(\"change\", setScreen);\n//     }"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 241,
-    "end_line": 260,
-    "content": "//     window.addEventListener(\"resize\", handleResize);\n    \n//     if (typeof window !== 'undefined' && window.screen?.orientation) {\n//       window.screen.orientation.addEventListener(\"change\", setScreen);\n//     }\n    \n    \n//     // Cleanup function\n//     return () => {\n//       window.removeEventListener(\"resize\", handleResize);\n//       if (window.screen?.orientation) {\n//         window.screen.orientation.removeEventListener(\"change\", setScreen);\n//       }\n//       window.removeEventListener(\"keyup\", handleStart);\n//       window.removeEventListener(\"touchstart\", handleStart);\n      \n//       if (requestIdRef.current) {\n//         cancelAnimationFrame(requestIdRef.current);\n//       }\n//     };"
-  },
-  {
-    "file": "./cloned_repo/src/components/Dino.tsx",
-    "start_line": 256,
-    "end_line": 268,
-    "content": "//       if (requestIdRef.current) {\n//         cancelAnimationFrame(requestIdRef.current);\n//       }\n//     };\n//   }, []);\n\n//   return (\n//     <div className=\"game-container\">\n//       <canvas ref={canvasRef} id=\"game\" />\n//     </div>\n//   );\n// }"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "import anime from 'animejs'\n\nimport { useEffect } from 'react'\nimport './footer.scss'\n\n\n\n\nexport default function Footer() {\n  \nuseEffect(() => {\n  const baseFire = document.getElementById('base-fire')\nconst fireNodes1 = document.querySelectorAll('#fireNodes1 .cf-flame')\nconst fireNodes2 = document.querySelectorAll('#fireNodes2 .cf-flame')\nconst fireNodes3 = document.querySelectorAll('#fireNodes3 .cf-flame')\n\nfunction animateBaseFire() {\n  anime({\n   targets: baseFire,\n   delay: anime.stagger(300),"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "function animateBaseFire() {\n  anime({\n   targets: baseFire,\n   delay: anime.stagger(300),\n   translateY: function(){return anime.random(0, -10);},\n   keyframes: [\n   {scale: .8},\n   {scale: .825},\n   {scale: .9},\n   {scale: .925},\n   {scale: 1}\n ],\n duration: 300,\n easing: 'easeInOutSine',\n loop: true,\n })\n}\n\nfunction animateFlame1() {"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "loop: true,\n })\n}\n\nfunction animateFlame1() {\n  anime({\n   targets: fireNodes1,\n   delay: anime.stagger(100),\n   translateY: function(){return anime.random(0, 300);},\n   rotate:30,\n   opacity:function(){return anime.random(.5, 1);},\n   translateX: function(){return anime.random(0, -60);},\n   scale:0,\n   skew: function () {return anime.random(0, 10);},\n   loop: true,\n   easing: \"easeInOutSine\",\n })\n}\n\nfunction animateFlame2(){"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "easing: \"easeInOutSine\",\n })\n}\n\nfunction animateFlame2(){\n  anime({\n   targets: fireNodes2,\n   delay: anime.stagger(400),\n   translateX: function(){return anime.random(-30, 0);},\n   translateY: function(){return anime.random(0, -260);},\n   scale:0,\n   rotate: function() { return anime.random(0, 60); },\n   skew:function(){\n     return anime.random(0, 30);\n   },\n   loop: true,\n   easing: \"easeInOutSine\"\n })\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "loop: true,\n   easing: \"easeInOutSine\"\n })\n}\n\nfunction animateFlame3() {\n  anime({\n   targets: fireNodes3,\n   delay: anime.stagger(500),\n   translateY: function(){return anime.random(-300, -200);},\n   opacity:function(){return anime.random(0, 1);},\n   translateX: function(){return anime.random(-50, 50);},\n   scale:0,\n   rotate: function() { return anime.random(0, -30); },\n   skew: function () {return anime.random(0, 20);},\n   loop: true,\n   easing: \"easeInOutSine\",\n })\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 76,
-    "end_line": 95,
-    "content": "loop: true,\n   easing: \"easeInOutSine\",\n })\n}\n\n  animateFlame1()\n  animateFlame2()\n  animateFlame3()\n  animateBaseFire()\n\n}, [])\n\n\n\n  return (\n    <footer className=\"bg-black absolute w-full h-40 mt-20 mb-10 flex flex-col items-center justify-center\">\n      <div className=\"cf-container \">\n        <div className=\"cf-flame-container\" id=\"fireNodes1\">\n        </div>\n        <div className=\"cf-flame-container\" id=\"fireNodes2\">"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 91,
-    "end_line": 110,
-    "content": "<footer className=\"bg-black absolute w-full h-40 mt-20 mb-10 flex flex-col items-center justify-center\">\n      <div className=\"cf-container \">\n        <div className=\"cf-flame-container\" id=\"fireNodes1\">\n        </div>\n        <div className=\"cf-flame-container\" id=\"fireNodes2\">\n          <div className=\"cf-flame\"></div>\n          <div className=\"cf-flame\"></div>\n          <div className=\"cf-flame\"></div>\n          <div className=\"cf-flame\"></div>\n        </div>\n        <div className=\"cf-flame-container\" id=\"base-fire\">\n          <div className=\"cf-flame\"></div>\n          <div className=\"cf-flame\"></div>\n          <div className=\"cf-flame\"></div>\n        </div>\n        <div className=\"cf-log-container\">\n          <div className=\"cf-log\"></div>\n          <div className=\"cf-log\"></div>\n        </div>\n      </div>"
-  },
-  {
-    "file": "./cloned_repo/src/components/footer.tsx",
-    "start_line": 106,
-    "end_line": 117,
-    "content": "<div className=\"cf-log-container\">\n          <div className=\"cf-log\"></div>\n          <div className=\"cf-log\"></div>\n        </div>\n      </div>\n      <div className=\"flex flex-col items-center justify-center mb-0 pb-0\">\n        <p className=\"text-white \">Have a great day ahead</p>\n        <p className=\"text-white\">Yashwanth Napa</p>\n      </div>\n    </footer>\n  );\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/ProjectCard.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "import { Project } from \"@/data/projects\"\nimport Image from \"next/image\"\nimport Link from \"next/link\"\nimport { Badge } from \"./ui/badge\"\n\nexport const ProjectCard = ({ project }: { project: Project }) => {\n    return (\n        <div className=\"flex flex-col justify-between space-y-4 border border-zinc-800 rounded-md p-6 hover:scale-105 transition-all h-full\">\n            <div className=\"w-[300px] h-[200px] overflow-hidden rounded-md\">\n                {project.image ? (\n                    <Image\n                        src={project.image}\n                        width={300}\n                        height={200}\n                        alt={project.title}\n                        className=\"object-cover w-full h-full\"\n                    />\n                ) : (\n                    <Image\n                        src=\"/globe.svg\""
-  },
-  {
-    "file": "./cloned_repo/src/components/ProjectCard.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "className=\"object-cover w-full h-full\"\n                    />\n                ) : (\n                    <Image\n                        src=\"/globe.svg\"\n                        width={100}\n                        height={100}\n                        alt={project.title}\n                        className=\"mx-auto\"\n                    />\n                )}\n            </div>\n\n            <div className=\"flex flex-row space-x-4\">\n                <div>\n                    <h1 className=\"text-lg\">{project.title}</h1>\n                </div>\n            </div>\n            <div className=\"flex flex-col\">\n                {/* brief description */}"
-  },
-  {
-    "file": "./cloned_repo/src/components/ProjectCard.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "<h1 className=\"text-lg\">{project.title}</h1>\n                </div>\n            </div>\n            <div className=\"flex flex-col\">\n                {/* brief description */}\n                <p className=\"text-sm\">{project.briefDescription}</p>\n            </div>\n            <div className=\"flex flex-wrap gap-2 \">\n                {/* skills */}\n                {project.skills.map((skill) => {\n                    return <Badge variant=\"default\" className=\"text-sm bg-zinc-800\" key={skill}>{skill}</Badge>\n                })}\n            </div>\n\n\n\n            <div className=\"flex flex-row justify-between\">\n                {/* links */}\n                <div className=\"flex flex-row space-x-4\">\n                    <Link href={project.links.github} target=\"_blank\" rel=\"noopener noreferrer\" className=\"text-blue-500 hover:scale-105 transition-all\">"
-  },
-  {
-    "file": "./cloned_repo/src/components/ProjectCard.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "<div className=\"flex flex-row justify-between\">\n                {/* links */}\n                <div className=\"flex flex-row space-x-4\">\n                    <Link href={project.links.github} target=\"_blank\" rel=\"noopener noreferrer\" className=\"text-blue-500 hover:scale-105 transition-all\">\n                        <Image src=\"/github-mark/github-mark/github-mark-white.svg\" width={20} height={20} alt=\"github\" />\n                    </Link>\n                    <Link href={project.links.demo} target=\"_blank\" rel=\"noopener noreferrer\" className=\"text-blue-500 hover:scale-105 transition-all\">\n                        {project.links.demo ? <Image src=\"/icons8-eye-64.png\" width={20} height={20} alt=\"deployed link\" /> : null}\n                    </Link>\n                </div>\n                <div className=\"flex justify-between gap-4 items-center\">\n                {/* Deployed and Live */}\n                <div className=\"flex items-center gap-2\">\n                    <div className={`h-3 w-3 border border-zinc-800  rounded-full animate-ping ${\n                        project.status === \"deployed\"\n                          ? \"bg-green-500\"\n                          : project.status === \"inactive\"\n                          ? \"bg-yellow-500\"\n                          : \"bg-red-500\""
-  },
-  {
-    "file": "./cloned_repo/src/components/ProjectCard.tsx",
-    "start_line": 61,
-    "end_line": 75,
-    "content": "project.status === \"deployed\"\n                          ? \"bg-green-500\"\n                          : project.status === \"inactive\"\n                          ? \"bg-yellow-500\"\n                          : \"bg-red-500\"\n                      }`}>\n                    </div>\n                    <Badge variant=\"outline\" className=\"text-sm bg-zinc-800\" key={project.status}>{project.status}</Badge>\n                </div>\n            </div>\n            </div>\n            \n        </div>\n    )\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/border-beam.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\";\n\nimport { cn } from \"@/lib/utils\";\nimport { motion, MotionStyle, Transition } from \"motion/react\";\n\ninterface BorderBeamProps {\n  /**\n   * The size of the border beam.\n   */\n  size?: number;\n  /**\n   * The duration of the border beam.\n   */\n  duration?: number;\n  /**\n   * The delay of the border beam.\n   */\n  delay?: number;\n  /**\n   * The color of the border beam from."
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/border-beam.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "* The delay of the border beam.\n   */\n  delay?: number;\n  /**\n   * The color of the border beam from.\n   */\n  colorFrom?: string;\n  /**\n   * The color of the border beam to.\n   */\n  colorTo?: string;\n  /**\n   * The motion transition of the border beam.\n   */\n  transition?: Transition;\n  /**\n   * The class name of the border beam.\n   */\n  className?: string;\n  /**"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/border-beam.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "/**\n   * The class name of the border beam.\n   */\n  className?: string;\n  /**\n   * The style of the border beam.\n   */\n  style?: React.CSSProperties;\n  /**\n   * Whether to reverse the animation direction.\n   */\n  reverse?: boolean;\n  /**\n   * The initial offset position (0-100).\n   */\n  initialOffset?: number;\n}\n\nexport const BorderBeam = ({\n  className,"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/border-beam.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "initialOffset?: number;\n}\n\nexport const BorderBeam = ({\n  className,\n  size = 50,\n  delay = 0,\n  duration = 6,\n  colorFrom = \"#ffaa40\",\n  colorTo = \"#9c40ff\",\n  transition,\n  style,\n  reverse = false,\n  initialOffset = 0,\n}: BorderBeamProps) => {\n  return (\n    <div className=\"pointer-events-none absolute inset-0 rounded-[inherit] border border-transparent [mask-clip:padding-box,border-box] [mask-composite:intersect] [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)]\">\n      <motion.div\n        className={cn(\n          \"absolute aspect-square\","
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/border-beam.tsx",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "return (\n    <div className=\"pointer-events-none absolute inset-0 rounded-[inherit] border border-transparent [mask-clip:padding-box,border-box] [mask-composite:intersect] [mask-image:linear-gradient(transparent,transparent),linear-gradient(#000,#000)]\">\n      <motion.div\n        className={cn(\n          \"absolute aspect-square\",\n          \"bg-gradient-to-l from-[var(--color-from)] via-[var(--color-to)] to-transparent\",\n          className,\n        )}\n        style={\n          {\n            width: size,\n            offsetPath: `rect(0 auto auto 0 round ${size}px)`,\n            \"--color-from\": colorFrom,\n            \"--color-to\": colorTo,\n            ...style,\n          } as MotionStyle\n        }\n        initial={{ offsetDistance: `${initialOffset}%` }}\n        animate={{\n          offsetDistance: reverse"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/border-beam.tsx",
-    "start_line": 76,
-    "end_line": 94,
-    "content": "} as MotionStyle\n        }\n        initial={{ offsetDistance: `${initialOffset}%` }}\n        animate={{\n          offsetDistance: reverse\n            ? [`${100 - initialOffset}%`, `${-initialOffset}%`]\n            : [`${initialOffset}%`, `${100 + initialOffset}%`],\n        }}\n        transition={{\n          repeat: Infinity,\n          ease: \"linear\",\n          duration,\n          delay: -delay,\n          ...transition,\n        }}\n      />\n    </div>\n  );\n};"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/border-beam.tsx",
-    "start_line": 91,
-    "end_line": 94,
-    "content": "/>\n    </div>\n  );\n};"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\";\n\nimport { cva, type VariantProps } from \"class-variance-authority\";\nimport {\n  motion,\n  MotionProps,\n  MotionValue,\n  useMotionValue,\n  useSpring,\n  useTransform,\n} from \"motion/react\";\nimport React, { PropsWithChildren, useRef } from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\nexport interface DockProps extends VariantProps<typeof dockVariants> {\n  className?: string;\n  iconSize?: number;\n  iconMagnification?: number;\n  iconDistance?: number;"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "export interface DockProps extends VariantProps<typeof dockVariants> {\n  className?: string;\n  iconSize?: number;\n  iconMagnification?: number;\n  iconDistance?: number;\n  direction?: \"top\" | \"middle\" | \"bottom\";\n  children: React.ReactNode;\n}\n\nconst DEFAULT_SIZE = 40;\nconst DEFAULT_MAGNIFICATION = 60;\nconst DEFAULT_DISTANCE = 140;\n\nconst dockVariants = cva(\n  \"supports-backdrop-blur:bg-white/10 supports-backdrop-blur:dark:bg-black/10 mx-auto mt-8 flex h-[58px] w-max items-center justify-center gap-2 rounded-2xl border p-2 backdrop-blur-md\",\n);\n\nconst Dock = React.forwardRef<HTMLDivElement, DockProps>(\n  (\n    {"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": ");\n\nconst Dock = React.forwardRef<HTMLDivElement, DockProps>(\n  (\n    {\n      className,\n      children,\n      iconSize = 30,\n      iconMagnification = 50,\n      iconDistance = DEFAULT_DISTANCE,\n      direction = \"middle\",\n      ...props\n    },\n    ref,\n  ) => {\n    const mouseX = useMotionValue(Infinity);\n\n// Define DockIcon props\ninterface DockIconProps {\n  mouseX?: MotionValue<number>;"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "const mouseX = useMotionValue(Infinity);\n\n// Define DockIcon props\ninterface DockIconProps {\n  mouseX?: MotionValue<number>;\n  size?: number;\n  magnification?: number;\n  distance?: number;\n  // Add other props your DockIcon uses\n}\n\nconst renderChildren = () => {\n  return React.Children.map(children, (child) => {\n    if (React.isValidElement<DockIconProps>(child) && child.type === DockIcon) {\n      return React.cloneElement(child, {\n        ...child.props,\n        mouseX,\n        size: iconSize,\n        magnification: iconMagnification,\n        distance: iconDistance,"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "...child.props,\n        mouseX,\n        size: iconSize,\n        magnification: iconMagnification,\n        distance: iconDistance,\n      });\n    }\n    return child;\n  });\n};\n\n    return (\n      <motion.div\n        ref={ref}\n        onMouseMove={(e) => mouseX.set(e.pageX)}\n        onMouseLeave={() => mouseX.set(Infinity)}\n        {...props}\n        className={cn(dockVariants({ className }), {\n          \"items-start\": direction === \"top\",\n          \"items-center\": direction === \"middle\","
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 76,
-    "end_line": 95,
-    "content": "onMouseLeave={() => mouseX.set(Infinity)}\n        {...props}\n        className={cn(dockVariants({ className }), {\n          \"items-start\": direction === \"top\",\n          \"items-center\": direction === \"middle\",\n          \"items-end\": direction === \"bottom\",\n        })}\n      >\n        {renderChildren()}\n      </motion.div>\n    );\n  },\n);\n\nDock.displayName = \"Dock\";\n\nexport interface DockIconProps\n  extends Omit<MotionProps & React.HTMLAttributes<HTMLDivElement>, \"children\"> {\n  size?: number;\n  magnification?: number;"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 91,
-    "end_line": 110,
-    "content": "export interface DockIconProps\n  extends Omit<MotionProps & React.HTMLAttributes<HTMLDivElement>, \"children\"> {\n  size?: number;\n  magnification?: number;\n  distance?: number;\n  mouseX?: MotionValue<number>;\n  className?: string;\n  children?: React.ReactNode;\n  props?: PropsWithChildren;\n}\n\nconst DockIcon = ({\n  size = DEFAULT_SIZE,\n  magnification = DEFAULT_MAGNIFICATION,\n  distance = DEFAULT_DISTANCE,\n  mouseX,\n  className,\n  children,\n  ...props"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 106,
-    "end_line": 125,
-    "content": "distance = DEFAULT_DISTANCE,\n  mouseX,\n  className,\n  children,\n  ...props\n}: DockIconProps) => {\n  const ref = useRef<HTMLDivElement>(null);\n  const padding = Math.max(6, size * 0.2);\n  const defaultMouseX = useMotionValue(Infinity);\n\n  const distanceCalc = useTransform(mouseX ?? defaultMouseX, (val: number) => {\n    const bounds = ref.current?.getBoundingClientRect() ?? { x: 0, width: 0 };\n    return val - bounds.x - bounds.width / 2;\n  });\n\n  const sizeTransform = useTransform(\n    distanceCalc,\n    [-distance, 0, distance],\n    [size, magnification, size],\n  );"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 121,
-    "end_line": 140,
-    "content": "const sizeTransform = useTransform(\n    distanceCalc,\n    [-distance, 0, distance],\n    [size, magnification, size],\n  );\n\n  const scaleSize = useSpring(sizeTransform, {\n    mass: 0.1,\n    stiffness: 150,\n    damping: 12,\n  });\n\n  return (\n    <motion.div\n      ref={ref}\n      style={{ width: scaleSize, height: scaleSize, padding }}\n      className={cn(\n        \"flex aspect-square cursor-pointer items-center justify-center rounded-full\",\n        className,\n      )}"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/dock.tsx",
-    "start_line": 136,
-    "end_line": 150,
-    "content": "style={{ width: scaleSize, height: scaleSize, padding }}\n      className={cn(\n        \"flex aspect-square cursor-pointer items-center justify-center rounded-full\",\n        className,\n      )}\n      {...props}\n    >\n      {children}\n    </motion.div>\n  );\n};\n\nDockIcon.displayName = \"DockIcon\";\n\nexport { Dock, DockIcon, dockVariants };"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/shine-border.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\";\n\nimport * as React from \"react\";\n\nimport { cn } from \"@/lib/utils\";\n\ninterface ShineBorderProps extends React.HTMLAttributes<HTMLDivElement> {\n  /**\n   * Width of the border in pixels\n   * @default 1\n   */\n  borderWidth?: number;\n  /**\n   * Duration of the animation in seconds\n   * @default 14\n   */\n  duration?: number;\n  /**\n   * Color of the border, can be a single color or an array of colors\n   * @default \"#000000\""
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/shine-border.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "*/\n  duration?: number;\n  /**\n   * Color of the border, can be a single color or an array of colors\n   * @default \"#000000\"\n   */\n  shineColor?: string | string[];\n}\n\n/**\n * Shine Border\n *\n * An animated background border effect component with configurable properties.\n */\nexport function ShineBorder({\n  borderWidth = 1,\n  duration = 14,\n  shineColor = \"#000000\",\n  className,\n  style,"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/shine-border.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "borderWidth = 1,\n  duration = 14,\n  shineColor = \"#000000\",\n  className,\n  style,\n  ...props\n}: ShineBorderProps) {\n  return (\n    <div\n      style={\n        {\n          \"--border-width\": `${borderWidth}px`,\n          \"--duration\": `${duration}s`,\n          backgroundImage: `radial-gradient(transparent,transparent, ${\n            Array.isArray(shineColor) ? shineColor.join(\",\") : shineColor\n          },transparent,transparent)`,\n          backgroundSize: \"300% 300%\",\n          mask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,\n          WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,\n          WebkitMaskComposite: \"xor\","
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/shine-border.tsx",
-    "start_line": 46,
-    "end_line": 63,
-    "content": "},transparent,transparent)`,\n          backgroundSize: \"300% 300%\",\n          mask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,\n          WebkitMask: `linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)`,\n          WebkitMaskComposite: \"xor\",\n          maskComposite: \"exclude\",\n          padding: \"var(--border-width)\",\n          ...style,\n        } as React.CSSProperties\n      }\n      className={cn(\n        \"pointer-events-none absolute inset-0 size-full rounded-[inherit] will-change-[background-position] motion-safe:animate-shine\",\n        className,\n      )}\n      {...props}\n    />\n  );\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/magicui/shine-border.tsx",
-    "start_line": 61,
-    "end_line": 63,
-    "content": "/>\n  );\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/pages/UnderConstruction.tsx",
-    "start_line": 1,
-    "end_line": 11,
-    "content": "export const UnderConstruction = () => {\n    return (\n        <div>\n            <h1>Under Construction</h1>\n        </div>\n    )\n}\n\nexport default UnderConstruction"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/badge.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "import * as React from \"react\"\nimport { Slot } from \"@radix-ui/react-slot\"\nimport { cva, type VariantProps } from \"class-variance-authority\"\n\nimport { cn } from \"@/lib/utils\"\n\nconst badgeVariants = cva(\n  \"inline-flex items-center justify-center rounded-md border px-2 py-0.5 text-xs font-medium w-fit whitespace-nowrap shrink-0 [&>svg]:size-3 gap-1 [&>svg]:pointer-events-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive transition-[color,box-shadow] overflow-hidden\",\n  {\n    variants: {\n      variant: {\n        default:\n          \"border-transparent bg-primary text-primary-foreground [a&]:hover:bg-primary/90\",\n        secondary:\n          \"border-transparent bg-secondary text-secondary-foreground [a&]:hover:bg-secondary/90\",\n        destructive:\n          \"border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60\",\n        outline:\n          \"text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground\",\n      },"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/badge.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "destructive:\n          \"border-transparent bg-destructive text-white [a&]:hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60\",\n        outline:\n          \"text-foreground [a&]:hover:bg-accent [a&]:hover:text-accent-foreground\",\n      },\n    },\n    defaultVariants: {\n      variant: \"default\",\n    },\n  }\n)\n\nfunction Badge({\n  className,\n  variant,\n  asChild = false,\n  ...props\n}: React.ComponentProps<\"span\"> &\n  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {\n  const Comp = asChild ? Slot : \"span\""
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/badge.tsx",
-    "start_line": 31,
-    "end_line": 46,
-    "content": "asChild = false,\n  ...props\n}: React.ComponentProps<\"span\"> &\n  VariantProps<typeof badgeVariants> & { asChild?: boolean }) {\n  const Comp = asChild ? Slot : \"span\"\n\n  return (\n    <Comp\n      data-slot=\"badge\"\n      className={cn(badgeVariants({ variant }), className)}\n      {...props}\n    />\n  )\n}\n\nexport { Badge, badgeVariants }"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/badge.tsx",
-    "start_line": 46,
-    "end_line": 46,
-    "content": "export { Badge, badgeVariants }"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/button.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "import * as React from \"react\"\nimport { Slot } from \"@radix-ui/react-slot\"\nimport { cva, type VariantProps } from \"class-variance-authority\"\n\nimport { cn } from \"@/lib/utils\"\n\nconst buttonVariants = cva(\n  \"inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-all disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:ring-[3px] aria-invalid:ring-destructive/20 dark:aria-invalid:ring-destructive/40 aria-invalid:border-destructive\",\n  {\n    variants: {\n      variant: {\n        default:\n          \"bg-primary text-primary-foreground shadow-xs hover:bg-primary/90\",\n        destructive:\n          \"bg-destructive text-white shadow-xs hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60\",\n        outline:\n          \"border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50\",\n        secondary:\n          \"bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80\",\n        ghost:"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/button.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "outline:\n          \"border bg-background shadow-xs hover:bg-accent hover:text-accent-foreground dark:bg-input/30 dark:border-input dark:hover:bg-input/50\",\n        secondary:\n          \"bg-secondary text-secondary-foreground shadow-xs hover:bg-secondary/80\",\n        ghost:\n          \"hover:bg-accent hover:text-accent-foreground dark:hover:bg-accent/50\",\n        link: \"text-primary underline-offset-4 hover:underline\",\n      },\n      size: {\n        default: \"h-9 px-4 py-2 has-[>svg]:px-3\",\n        sm: \"h-8 rounded-md gap-1.5 px-3 has-[>svg]:px-2.5\",\n        lg: \"h-10 rounded-md px-6 has-[>svg]:px-4\",\n        icon: \"size-9\",\n      },\n    },\n    defaultVariants: {\n      variant: \"default\",\n      size: \"default\",\n    },\n  }"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/button.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "defaultVariants: {\n      variant: \"default\",\n      size: \"default\",\n    },\n  }\n)\n\nfunction Button({\n  className,\n  variant,\n  size,\n  asChild = false,\n  ...props\n}: React.ComponentProps<\"button\"> &\n  VariantProps<typeof buttonVariants> & {\n    asChild?: boolean\n  }) {\n  const Comp = asChild ? Slot : \"button\"\n\n  return ("
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/button.tsx",
-    "start_line": 46,
-    "end_line": 59,
-    "content": "asChild?: boolean\n  }) {\n  const Comp = asChild ? Slot : \"button\"\n\n  return (\n    <Comp\n      data-slot=\"button\"\n      className={cn(buttonVariants({ variant, size, className }))}\n      {...props}\n    />\n  )\n}\n\nexport { Button, buttonVariants }"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/separator.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\n\nimport * as React from \"react\"\nimport * as SeparatorPrimitive from \"@radix-ui/react-separator\"\n\nimport { cn } from \"@/lib/utils\"\n\nfunction Separator({\n  className,\n  orientation = \"horizontal\",\n  decorative = true,\n  ...props\n}: React.ComponentProps<typeof SeparatorPrimitive.Root>) {\n  return (\n    <SeparatorPrimitive.Root\n      data-slot=\"separator-root\"\n      decorative={decorative}\n      orientation={orientation}\n      className={cn(\n        \"bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px\","
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/separator.tsx",
-    "start_line": 16,
-    "end_line": 28,
-    "content": "data-slot=\"separator-root\"\n      decorative={decorative}\n      orientation={orientation}\n      className={cn(\n        \"bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px\",\n        className\n      )}\n      {...props}\n    />\n  )\n}\n\nexport { Separator }"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/tooltip.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\n\nimport * as React from \"react\"\nimport * as TooltipPrimitive from \"@radix-ui/react-tooltip\"\n\nimport { cn } from \"@/lib/utils\"\n\nfunction TooltipProvider({\n  delayDuration = 0,\n  ...props\n}: React.ComponentProps<typeof TooltipPrimitive.Provider>) {\n  return (\n    <TooltipPrimitive.Provider\n      data-slot=\"tooltip-provider\"\n      delayDuration={delayDuration}\n      {...props}\n    />\n  )\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/tooltip.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "{...props}\n    />\n  )\n}\n\nfunction Tooltip({\n  ...props\n}: React.ComponentProps<typeof TooltipPrimitive.Root>) {\n  return (\n    <TooltipProvider>\n      <TooltipPrimitive.Root data-slot=\"tooltip\" {...props} />\n    </TooltipProvider>\n  )\n}\n\nfunction TooltipTrigger({\n  ...props\n}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {\n  return <TooltipPrimitive.Trigger data-slot=\"tooltip-trigger\" {...props} />\n}"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/tooltip.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "function TooltipTrigger({\n  ...props\n}: React.ComponentProps<typeof TooltipPrimitive.Trigger>) {\n  return <TooltipPrimitive.Trigger data-slot=\"tooltip-trigger\" {...props} />\n}\n\nfunction TooltipContent({\n  className,\n  sideOffset = 0,\n  children,\n  ...props\n}: React.ComponentProps<typeof TooltipPrimitive.Content>) {\n  return (\n    <TooltipPrimitive.Portal>\n      <TooltipPrimitive.Content\n        data-slot=\"tooltip-content\"\n        sideOffset={sideOffset}\n        className={cn(\n          \"bg-primary text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance\",\n          className"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/tooltip.tsx",
-    "start_line": 46,
-    "end_line": 61,
-    "content": "data-slot=\"tooltip-content\"\n        sideOffset={sideOffset}\n        className={cn(\n          \"bg-primary text-primary-foreground animate-in fade-in-0 zoom-in-95 data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=closed]:zoom-out-95 data-[side=bottom]:slide-in-from-top-2 data-[side=left]:slide-in-from-right-2 data-[side=right]:slide-in-from-left-2 data-[side=top]:slide-in-from-bottom-2 z-50 w-fit origin-(--radix-tooltip-content-transform-origin) rounded-md px-3 py-1.5 text-xs text-balance\",\n          className\n        )}\n        {...props}\n      >\n        {children}\n        <TooltipPrimitive.Arrow className=\"bg-primary fill-primary z-50 size-2.5 translate-y-[calc(-50%_-_2px)] rotate-45 rounded-[2px]\" />\n      </TooltipPrimitive.Content>\n    </TooltipPrimitive.Portal>\n  )\n}\n\nexport { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }"
-  },
-  {
-    "file": "./cloned_repo/src/components/ui/tooltip.tsx",
-    "start_line": 61,
-    "end_line": 61,
-    "content": "export { Tooltip, TooltipTrigger, TooltipContent, TooltipProvider }"
-  },
-  {
-    "file": "./cloned_repo/src/data/cracked.ts",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "export type cracked={\n    name:string;\n    link:string;\n    about:string;\n}\n\nexport const cracked:cracked[]=[\n    {\n        name:\"tscoding\",\n        link:\"https://www.youtube.com/@TsodingDaily\",\n        about:\"cracked\"\n    },\n    {\n        name:\"dr Jonas Birch\",\n        link:\"https://www.youtube.com/@dr-Jonas-Birch\",\n        about:\"Low level expert\"\n    },\n    {\n        name:\"Live overflow\",\n        link:\"https://www.youtube.com/@LiveOverflow\","
-  },
-  {
-    "file": "./cloned_repo/src/data/cracked.ts",
-    "start_line": 16,
-    "end_line": 30,
-    "content": "about:\"Low level expert\"\n    },\n    {\n        name:\"Live overflow\",\n        link:\"https://www.youtube.com/@LiveOverflow\",\n        about:\"bits expert\"\n    },\n    {\n        name:\"jdh\",\n        link:\"https://www.youtube.com/@jdh\",\n        about:\"Scratch dev\"\n    }\n\n\n]"
-  },
-  {
-    "file": "./cloned_repo/src/data/experience.ts",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "export type Experience = {\n    title: string;\n    company: string;\n    logo: string;\n    location: string;\n    startDate: string;\n    endDate: string;\n    description: string[];\n}\n\nexport const experiences: Experience[] = [\n    {\n        title: \"Software Intern\",\n        logo: \"../../SRF-logo.png\",\n        company: \"STF-LTD\",\n        location: \"Chennai\",\n        startDate: \"July 2024\",\n        endDate: \"August 2024\",\n        description: [\"Worked on developing features for Policy Eligibility Matrix enterpise HR PW application focusing on reward management module for employees benifit calculations. \",\n            \"Implemented CI/CD pipelines using Azure Devops for automated build and development cycles to on premise servers.\","
-  },
-  {
-    "file": "./cloned_repo/src/data/experience.ts",
-    "start_line": 16,
-    "end_line": 24,
-    "content": "location: \"Chennai\",\n        startDate: \"July 2024\",\n        endDate: \"August 2024\",\n        description: [\"Worked on developing features for Policy Eligibility Matrix enterpise HR PW application focusing on reward management module for employees benifit calculations. \",\n            \"Implemented CI/CD pipelines using Azure Devops for automated build and development cycles to on premise servers.\",\n            \"Learnings include, Angular for frontend development, Azure Devops for CI/CD pipelines, service workers for offline support for PWA, and agile methodology for software development.\"\n        ],\n    }\n]"
-  },
-  {
-    "file": "./cloned_repo/src/data/projects.ts",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "export type Project = {\n    image: string;\n    title: string;\n    description: string;\n    skills: string[];\n    briefDescription: string;\n    status: \"deployed\" | \"not deployed\" | \"inactive\" | \"\";\n    links: {github: string, demo: string};\n}\n\nexport const projects: Project[] = [\n    {\n        image: \"/projects/blog.png\",\n        title: \"Blog Application\",\n        description: \"A blog application built for minimal configuration and just content\",\n        skills: [\"React.js\", \"TypeScript\", \"Tailwind CSS\",\"ShadCn\" , \"Node.js\", \"Express.js\", \"MongoDB\", \"aws-ec2\",\"aws-s3\"],\n        briefDescription: \"A blog application built for minimal configuration and just content\",\n        status:\"deployed\","
-  },
-  {
-    "file": "./cloned_repo/src/data/projects.ts",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "title: \"Blog Application\",\n        description: \"A blog application built for minimal configuration and just content\",\n        skills: [\"React.js\", \"TypeScript\", \"Tailwind CSS\",\"ShadCn\" , \"Node.js\", \"Express.js\", \"MongoDB\", \"aws-ec2\",\"aws-s3\"],\n        briefDescription: \"A blog application built for minimal configuration and just content\",\n        status:\"deployed\",\n        links: {github: \"https://github.com/Yashwanth12321/blog\", demo: \"http://bestsimpledemobucket.s3-website.ap-south-1.amazonaws.com\"}\n    },\n    {\n        image: \"/projects/claim_management.png\",\n        title: \"Claims Management System\",\n        description:\"A claims management system built to streamline insurance claims process.\",\n        skills:[\"React.js\", \"TypeScript\", \"Tailwind CSS\",\"ShadCn\" , \"Node.js\", \"Express.js\", \"MongoDB\", \"aws-ec2\",\"aws-s3\"],\n        briefDescription: \"A claims management system built to streamline insurance claims process.\",\n        status:\"deployed\",\n        links: {github: \"https://github.com/Yashwanth12321/Claims_MangementP\", demo: \"http://claimfrontendaarogyaid.s3-website.ap-south-1.amazonaws.com\"}\n    },\n    {\n        image: \"/projects/influencer.png\",\n        title: \"Influencer Selection Algorithm\",\n        description:\"A way to identify most popular influencer based on score point from raw videos\","
-  },
-  {
-    "file": "./cloned_repo/src/data/projects.ts",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "},\n    {\n        image: \"/projects/influencer.png\",\n        title: \"Influencer Selection Algorithm\",\n        description:\"A way to identify most popular influencer based on score point from raw videos\",\n        skills:[\"Python\", \"Pandas\", \"Numpy\", \"MediaPipe\", \"OpenCV\", \"Deepface\"],\n        briefDescription: \"A way to identify most popular influencer based on score point from raw videos\",\n        status:\"not deployed\",\n        links: {github: \"https://github.com/Yashwanth12321/Influencer-anaysis\", demo: \"\"}\n    },\n    {\n        image: \"/projects/lms.webp\",\n        title: \"Library Management System\",\n        description: \"A library management system mobile application containing all required features including book issue/retrieval scan and more.\",\n        skills: [\"Flutter\", \"Dart\", \"Firebase\", \"Cloud Firestore\"],\n        briefDescription: \"A library management system mobile application containing all required features including book issue/retrieval scan and more.\",\n        status:\"not deployed\",\n        links: {github: \"https://github.com/Yashwanth12321/LMS\", demo: \"\"}\n    },\n    {"
-  },
-  {
-    "file": "./cloned_repo/src/data/projects.ts",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "briefDescription: \"A library management system mobile application containing all required features including book issue/retrieval scan and more.\",\n        status:\"not deployed\",\n        links: {github: \"https://github.com/Yashwanth12321/LMS\", demo: \"\"}\n    },\n    {\n        image: \"/projects/vGIS.png\",\n        title: \"Spatial visualization tool\",\n        description: \"A spatial visualization tool to better visualize multiple data across India including Covid data, Gdp data, and gain insights\",\n        skills: [\"React.js\", \"Javascript\", \"Tailwind CSS\"],\n        briefDescription: \"A spatial visualization tool to better visualize multiple data across India including Covid data, Gdp data, and gain insights\",\n        status:\"not deployed\",\n        links: {github: \"https://github.com/Yashwanth12321/vGIS\", demo: \"\"}\n    },\n    {\n        image: \"/projects/ling.png\",\n        title: \"Realtime Voice translator\",\n        description: \"A realtime voice translator built to translate audio to text and vice versa\",\n        skills: [\"python\", \"docker\", \"api\", \"ASR\", \"TTS\"],\n        briefDescription: \"A realtime voice translator built to translate audio to text and vice versa\",\n        status:\"not deployed\","
-  },
-  {
-    "file": "./cloned_repo/src/data/projects.ts",
-    "start_line": 61,
-    "end_line": 78,
-    "content": "title: \"Realtime Voice translator\",\n        description: \"A realtime voice translator built to translate audio to text and vice versa\",\n        skills: [\"python\", \"docker\", \"api\", \"ASR\", \"TTS\"],\n        briefDescription: \"A realtime voice translator built to translate audio to text and vice versa\",\n        status:\"not deployed\",\n        links: {github: \"https://github.com/Yashwanth12321/LinguasyncV2\", demo: \"\"}\n    },\n    // {\n    //     image:\"/projects/repohelp.png\",\n    //     title:\"Chat with Github Repo\",\n    //     description:\"A chatbot interface to understand that github repo better to make contributions\",\n    //     skills:[\"gemini api\", \"github api\", \"python\",\"Streamlit\",],\n    //     briefDescription: \"A chatbot interface to understand that github repo better to make contributions\",\n    //     status:\"not deployed\",\n    //     links: {github: \"https://github.com/Yashwanth12321/repohelp\", demo: \"\"}\n    // }\n    \n]"
-  },
-  {
-    "file": "./cloned_repo/src/data/projects.ts",
-    "start_line": 76,
-    "end_line": 78,
-    "content": "// }\n    \n]"
-  },
-  {
-    "file": "./cloned_repo/src/data/skills.ts",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "export type skill={\n    name:string;\n}\n\nexport const skills:skill[]=[\n    {\n        name:\"React.js\"\n    },\n    {\n        name:\"TypeScript/JavaScript\"\n    },\n    {\n        name:\"Ui libraries\"\n    },\n    {\n        name:\"Node.js\"\n    },\n    {\n        name:\"Express.js\"\n    },"
-  },
-  {
-    "file": "./cloned_repo/src/data/skills.ts",
-    "start_line": 16,
-    "end_line": 33,
-    "content": "name:\"Node.js\"\n    },\n    {\n        name:\"Express.js\"\n    },\n    {\n        name:\"SQL/NoSQL Databases\"\n    },\n    {\n        name:\"AWS\"\n    },\n    {\n        name:\"Python\"\n    },\n    {\n        name:\"C/C++\"\n    }\n]"
-  },
-  {
-    "file": "./cloned_repo/src/data/skills.ts",
-    "start_line": 31,
-    "end_line": 33,
-    "content": "name:\"C/C++\"\n    }\n]"
-  },
-  {
-    "file": "./cloned_repo/src/design/bg.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\nimport React, { useEffect, useState } from 'react';\nimport anime from 'animejs';\n\nconst StarrySky = () => {\n  const [vw, setVw] = useState(window.innerWidth);\n  const [vh, setVh] = useState(window.innerHeight);\n  const num = 60;\n\n  useEffect(() => {\n    const handleResize = () => {\n      setVw(window.innerWidth);\n      setVh(window.innerHeight);\n    };\n\n    window.addEventListener('resize', handleResize);\n\n    starryNight();\n    shootingStars();"
-  },
-  {
-    "file": "./cloned_repo/src/design/bg.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "window.addEventListener('resize', handleResize);\n\n    starryNight();\n    shootingStars();\n\n    return () => window.removeEventListener('resize', handleResize);\n  }, []);\n\n  const starryNight = () => {\n    anime({\n      targets: ['#sky .star'],\n      opacity: [\n        { duration: 700, value: '0' },\n        { duration: 700, value: '1' }\n      ],\n      easing: 'linear',\n      loop: true,\n      delay: (el, i) => 50 * i\n    });\n  };"
-  },
-  {
-    "file": "./cloned_repo/src/design/bg.tsx",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "easing: 'linear',\n      loop: true,\n      delay: (el, i) => 50 * i\n    });\n  };\n\n  const shootingStars = () => {\n    anime({\n      targets: ['#shootingstars .wish'],\n      easing: 'linear',\n      loop: true,\n      delay: (el, i) => 1000 * i,\n      opacity: [\n        { duration: 700, value: '1' }\n      ],\n      width: [\n        { value: '150px' },\n        { value: '0px' }\n      ],\n      translateX: 350"
-  },
-  {
-    "file": "./cloned_repo/src/design/bg.tsx",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "width: [\n        { value: '150px' },\n        { value: '0px' }\n      ],\n      translateX: 350\n    });\n  };\n\n  const randomRadius = () => Math.random() * 0.7 + 0.6;\n  const getRandomX = () => Math.floor(Math.random() * vw).toString();\n  const getRandomY = () => Math.floor(Math.random() * vh).toString();\n\n  return (\n    <div id=\"App\">\n      <svg id=\"sky\">\n        {[...Array(num)].map((_, i) => (\n          <circle\n            key={i}\n            cx={getRandomX()}\n            cy={getRandomY()}"
-  },
-  {
-    "file": "./cloned_repo/src/design/bg.tsx",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "{[...Array(num)].map((_, i) => (\n          <circle\n            key={i}\n            cx={getRandomX()}\n            cy={getRandomY()}\n            r={randomRadius()}\n            stroke=\"none\"\n            strokeWidth=\"0\"\n            fill=\"white\"\n            className=\"star\"\n          />\n        ))}\n      </svg>\n      <div id=\"shootingstars\">\n        {[...Array(60)].map((_, i) => (\n          <div\n            key={i}\n            className=\"wish\"\n            style={{\n              left: `${getRandomY()}px`,"
-  },
-  {
-    "file": "./cloned_repo/src/design/bg.tsx",
-    "start_line": 76,
-    "end_line": 90,
-    "content": "<div\n            key={i}\n            className=\"wish\"\n            style={{\n              left: `${getRandomY()}px`,\n              top: `${getRandomX()}px`\n            }}\n          />\n        ))}\n      </div>\n    </div>\n  );\n};\n\nexport default StarrySky;"
-  },
-  {
-    "file": "./cloned_repo/src/design/Dino.tsx",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\";\n\nimport dynamic from 'next/dynamic';\nimport { useRef } from 'react';\n// @ts-expect-error this lib doest have its ts declarations\nconst ChromeDinoGame = dynamic(() => import('react-chrome-dino'), { ssr: false });\n\nconst Dino = () => {\n    const divRef = useRef<HTMLDivElement>(null);\n    const handleClick = () => {\n        if (divRef.current) {\n            divRef.current.focus();\n            document.body.style.overflow = 'hidden';\n            const info=document.querySelector('.Info');\n            if(info) info.innerHTML=\"<p>Click outside it or unhover from it to exit</p>\";\n        }\n    };\n    const handleBlur = () => {\n        document.body.style.overflow = 'auto';\n        const info=document.querySelector('.Info');"
-  },
-  {
-    "file": "./cloned_repo/src/design/Dino.tsx",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "}\n    };\n    const handleBlur = () => {\n        document.body.style.overflow = 'auto';\n        const info=document.querySelector('.Info');\n        if(info) info.innerHTML=\"<p>Click on it or hover over it  </p>\";\n    };\n  return (\n    <div>\n      <div ref={divRef} onMouseEnter={handleClick} onMouseLeave={handleBlur} className=\"\">\n        <div className='Info'>\n          Click on it or hover over it\n        </div>\n        <ChromeDinoGame />\n      </div>\n    </div>\n  )\n}\n\nexport default Dino"
-  },
-  {
-    "file": "./cloned_repo/src/design/Dino.tsx",
-    "start_line": 31,
-    "end_line": 35,
-    "content": "</div>\n  )\n}\n\nexport default Dino"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/CactiController.js",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "import Cactus from \"./Cactus.js\";\n\nexport default class CactiController {\n  CACTUS_INTERVAL_MIN = 500;\n  CACTUS_INTERVAL_MAX = 2000;\n\n  nextCactusInterval = null;\n  cacti = [];\n\n  constructor(ctx, cactiImages, scaleRatio, speed) {\n    this.ctx = ctx;\n    this.canvas = ctx.canvas;\n    this.cactiImages = cactiImages;\n    this.scaleRatio = scaleRatio;\n    this.speed = speed;\n\n    this.setNextCactusTime();\n  }\n\n  setNextCactusTime() {"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/CactiController.js",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "this.setNextCactusTime();\n  }\n\n  setNextCactusTime() {\n    const num = this.getRandomNumber(\n      this.CACTUS_INTERVAL_MIN,\n      this.CACTUS_INTERVAL_MAX\n    );\n\n    this.nextCactusInterval = num;\n  }\n\n  getRandomNumber(min, max) {\n    return Math.floor(Math.random() * (max - min + 1) + min);\n  }\n\n  createCactus() {\n    const index = this.getRandomNumber(0, this.cactiImages.length - 1);\n    const cactusImage = this.cactiImages[index];"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/CactiController.js",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "}\n\n  createCactus() {\n    const index = this.getRandomNumber(0, this.cactiImages.length - 1);\n    const cactusImage = this.cactiImages[index];\n    const x = this.canvas.width * 1.5;\n    const y = this.canvas.height - cactusImage.height;\n    const cactus = new Cactus(\n      this.ctx,\n      x,\n      y,\n      cactusImage.width,\n      cactusImage.height,\n      cactusImage.image\n    );\n\n    this.cacti.push(cactus);\n  }\n\n  update(gameSpeed, frameTimeDelta) {"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/CactiController.js",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "this.cacti.push(cactus);\n  }\n\n  update(gameSpeed, frameTimeDelta) {\n    if (this.nextCactusInterval <= 0) {\n      this.createCactus();\n      this.setNextCactusTime();\n    }\n    this.nextCactusInterval -= frameTimeDelta;\n\n    this.cacti.forEach((cactus) => {\n      cactus.update(this.speed, gameSpeed, frameTimeDelta, this.scaleRatio);\n    });\n\n    this.cacti = this.cacti.filter((cactus) => cactus.x > -cactus.width);\n  }\n\n  draw() {\n    this.cacti.forEach((cactus) => cactus.draw());"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/CactiController.js",
-    "start_line": 61,
-    "end_line": 75,
-    "content": "this.cacti = this.cacti.filter((cactus) => cactus.x > -cactus.width);\n  }\n\n  draw() {\n    this.cacti.forEach((cactus) => cactus.draw());\n  }\n\n  collideWith(sprite) {\n    return this.cacti.some((cactus) => cactus.collideWith(sprite));\n  }\n\n  reset() {\n    this.cacti = [];\n  }\n}"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Cactus.js",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\nexport default class Cactus {\n  constructor(ctx, x, y, width, height, image) {\n    this.ctx = ctx;\n    this.x = x;\n    this.y = y;\n    this.width = width;\n    this.height = height;\n    this.image = image;\n  }\n\n  update(speed, gameSpeed, frameTimeDelta, scaleRatio) {\n    this.x -= speed * gameSpeed * frameTimeDelta * scaleRatio;\n  }\n\n  draw() {\n    this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);\n  }\n\n  collideWith(sprite) {"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Cactus.js",
-    "start_line": 16,
-    "end_line": 33,
-    "content": "draw() {\n    this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);\n  }\n\n  collideWith(sprite) {\n    const adjustBy = 1.4;\n    if (\n      sprite.x < this.x + this.width / adjustBy &&\n      sprite.x + sprite.width / adjustBy > this.x &&\n      sprite.y < this.y + this.height / adjustBy &&\n      sprite.height + sprite.y / adjustBy > this.y\n    ) {\n      return true;\n    } else {\n      return false;\n    }\n  }\n}"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Cactus.js",
-    "start_line": 31,
-    "end_line": 33,
-    "content": "}\n  }\n}"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Ground.js",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\nexport default class Ground {\n  constructor(ctx, width, height, speed, scaleRatio) {\n    this.ctx = ctx;\n    this.canvas = ctx.canvas;\n    this.width = width;\n    this.height = height;\n    this.speed = speed;\n    this.scaleRatio = scaleRatio;\n\n    this.x = 0;\n    this.y = this.canvas.height - this.height;\n\n    this.groundImage = new Image();\n    this.groundImage.src = \"images/ground.png\";\n  }\n\n  update(gameSpeed, frameTimeDelta) {\n    this.x -= gameSpeed * frameTimeDelta * this.speed * this.scaleRatio;\n  }"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Ground.js",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "}\n\n  update(gameSpeed, frameTimeDelta) {\n    this.x -= gameSpeed * frameTimeDelta * this.speed * this.scaleRatio;\n  }\n\n  draw() {\n    this.ctx.drawImage(\n      this.groundImage,\n      this.x,\n      this.y,\n      this.width,\n      this.height\n    );\n\n    this.ctx.drawImage(\n      this.groundImage,\n      this.x + this.width,\n      this.y,\n      this.width,"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Ground.js",
-    "start_line": 31,
-    "end_line": 47,
-    "content": "this.ctx.drawImage(\n      this.groundImage,\n      this.x + this.width,\n      this.y,\n      this.width,\n      this.height\n    );\n\n    if (this.x < -this.width) {\n      this.x = 0;\n    }\n  }\n\n  reset() {\n    this.x = 0;\n  }\n}"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Ground.js",
-    "start_line": 46,
-    "end_line": 47,
-    "content": "}\n}"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\nimport Player from \"./Player.js\";\nimport Ground from \"./Ground.js\";\nimport CactiController from \"./CactiController.js\";\nimport Score from \"./Score.js\";\n\nconst canvas = document.getElementById(\"game\");\nconst ctx = canvas.getContext(\"2d\");\n\nconst GAME_SPEED_START = 1; // 1.0\nconst GAME_SPEED_INCREMENT = 0.00001;\n\nconst GAME_WIDTH = 800;\nconst GAME_HEIGHT = 200;\nconst PLAYER_WIDTH = 88 / 1.5; //58\nconst PLAYER_HEIGHT = 94 / 1.5; //62\nconst MAX_JUMP_HEIGHT = GAME_HEIGHT;\nconst MIN_JUMP_HEIGHT = 150;\nconst GROUND_WIDTH = 2400;\nconst GROUND_HEIGHT = 24;"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "const PLAYER_HEIGHT = 94 / 1.5; //62\nconst MAX_JUMP_HEIGHT = GAME_HEIGHT;\nconst MIN_JUMP_HEIGHT = 150;\nconst GROUND_WIDTH = 2400;\nconst GROUND_HEIGHT = 24;\nconst GROUND_AND_CACTUS_SPEED = 0.5;\n\nconst CACTI_CONFIG = [\n  { width: 48 / 1.5, height: 100 / 1.5, image: \"images/cactus_1.png\" },\n  { width: 98 / 1.5, height: 100 / 1.5, image: \"images/cactus_2.png\" },\n  { width: 68 / 1.5, height: 70 / 1.5, image: \"images/cactus_3.png\" },\n];\n\n//Game Objects\nlet player = null;\nlet ground = null;\nlet cactiController = null;\nlet score = null;\n\nlet scaleRatio = null;"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "let ground = null;\nlet cactiController = null;\nlet score = null;\n\nlet scaleRatio = null;\nlet previousTime = null;\nlet gameSpeed = GAME_SPEED_START;\nlet gameOver = false;\nlet hasAddedEventListenersForRestart = false;\nlet waitingToStart = true;\n\nfunction createSprites() {\n  const playerWidthInGame = PLAYER_WIDTH * scaleRatio;\n  const playerHeightInGame = PLAYER_HEIGHT * scaleRatio;\n  const minJumpHeightInGame = MIN_JUMP_HEIGHT * scaleRatio;\n  const maxJumpHeightInGame = MAX_JUMP_HEIGHT * scaleRatio;\n\n  const groundWidthInGame = GROUND_WIDTH * scaleRatio;\n  const groundHeightInGame = GROUND_HEIGHT * scaleRatio;"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "const maxJumpHeightInGame = MAX_JUMP_HEIGHT * scaleRatio;\n\n  const groundWidthInGame = GROUND_WIDTH * scaleRatio;\n  const groundHeightInGame = GROUND_HEIGHT * scaleRatio;\n\n  player = new Player(\n    ctx,\n    playerWidthInGame,\n    playerHeightInGame,\n    minJumpHeightInGame,\n    maxJumpHeightInGame,\n    scaleRatio\n  );\n\n  ground = new Ground(\n    ctx,\n    groundWidthInGame,\n    groundHeightInGame,\n    GROUND_AND_CACTUS_SPEED,\n    scaleRatio"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "ctx,\n    groundWidthInGame,\n    groundHeightInGame,\n    GROUND_AND_CACTUS_SPEED,\n    scaleRatio\n  );\n\n  const cactiImages = CACTI_CONFIG.map((cactus) => {\n    const image = new Image();\n    image.src = cactus.image;\n    return {\n      image: image,\n      width: cactus.width * scaleRatio,\n      height: cactus.height * scaleRatio,\n    };\n  });\n\n  cactiController = new CactiController(\n    ctx,\n    cactiImages,"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 76,
-    "end_line": 95,
-    "content": "});\n\n  cactiController = new CactiController(\n    ctx,\n    cactiImages,\n    scaleRatio,\n    GROUND_AND_CACTUS_SPEED\n  );\n\n  score = new Score(ctx, scaleRatio);\n}\n\nfunction setScreen() {\n  scaleRatio = getScaleRatio();\n  canvas.width = GAME_WIDTH * scaleRatio;\n  canvas.height = GAME_HEIGHT * scaleRatio;\n  createSprites();\n}\n\nsetScreen();"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 91,
-    "end_line": 110,
-    "content": "canvas.height = GAME_HEIGHT * scaleRatio;\n  createSprites();\n}\n\nsetScreen();\n//Use setTimeout on Safari mobile rotation otherwise works fine on desktop\nwindow.addEventListener(\"resize\", () => setTimeout(setScreen, 500));\n\nif (screen.orientation) {\n  screen.orientation.addEventListener(\"change\", setScreen);\n}\n\nfunction getScaleRatio() {\n  const screenHeight = Math.min(\n    window.innerHeight,\n    document.documentElement.clientHeight\n  );\n\n  const screenWidth = Math.min(\n    window.innerWidth,"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 106,
-    "end_line": 125,
-    "content": "document.documentElement.clientHeight\n  );\n\n  const screenWidth = Math.min(\n    window.innerWidth,\n    document.documentElement.clientWidth\n  );\n\n  //window is wider than the game width\n  if (screenWidth / screenHeight < GAME_WIDTH / GAME_HEIGHT) {\n    return screenWidth / GAME_WIDTH;\n  } else {\n    return screenHeight / GAME_HEIGHT;\n  }\n}\n\nfunction showGameOver() {\n  const fontSize = 70 * scaleRatio;\n  ctx.font = `${fontSize}px Verdana`;\n  ctx.fillStyle = \"grey\";"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 121,
-    "end_line": 140,
-    "content": "function showGameOver() {\n  const fontSize = 70 * scaleRatio;\n  ctx.font = `${fontSize}px Verdana`;\n  ctx.fillStyle = \"grey\";\n  const x = canvas.width / 4.5;\n  const y = canvas.height / 2;\n  ctx.fillText(\"GAME OVER\", x, y);\n}\n\n  function setupGameReset() {\n    if (!hasAddedEventListenersForRestart) {\n      hasAddedEventListenersForRestart = true;\n\n      setTimeout(() => {\n        window.addEventListener(\"keyup\", reset, { once: true });\n        window.addEventListener(\"touchstart\", reset, { once: true });\n      }, 1000);\n    }\n  }"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 136,
-    "end_line": 155,
-    "content": "window.addEventListener(\"keyup\", reset, { once: true });\n        window.addEventListener(\"touchstart\", reset, { once: true });\n      }, 1000);\n    }\n  }\n\nfunction reset() {\n  hasAddedEventListenersForRestart = false;\n  gameOver = false;\n  waitingToStart = false;\n  ground.reset();\n  cactiController.reset();\n  score.reset();\n  gameSpeed = GAME_SPEED_START;\n}\n\nfunction showStartGameText() {\n  const fontSize = 40 * scaleRatio;\n  ctx.font = `${fontSize}px Verdana`;\n  ctx.fillStyle = \"grey\";"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 151,
-    "end_line": 170,
-    "content": "function showStartGameText() {\n  const fontSize = 40 * scaleRatio;\n  ctx.font = `${fontSize}px Verdana`;\n  ctx.fillStyle = \"grey\";\n  const x = canvas.width / 14;\n  const y = canvas.height / 2;\n  ctx.fillText(\"Tap Screen or Press Space To Start\", x, y);\n}\n\nfunction updateGameSpeed(frameTimeDelta) {\n  gameSpeed += frameTimeDelta * GAME_SPEED_INCREMENT;\n}\n\nfunction clearScreen() {\n  ctx.fillStyle = \"white\";\n  ctx.fillRect(0, 0, canvas.width, canvas.height);\n}\n\nfunction gameLoop(currentTime) {"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 166,
-    "end_line": 185,
-    "content": "ctx.fillStyle = \"white\";\n  ctx.fillRect(0, 0, canvas.width, canvas.height);\n}\n\nfunction gameLoop(currentTime) {\n  if (previousTime === null) {\n    previousTime = currentTime;\n    requestAnimationFrame(gameLoop);\n    return;\n  }\n  const frameTimeDelta = currentTime - previousTime;\n  previousTime = currentTime;\n\n  clearScreen();\n\n  if (!gameOver && !waitingToStart) {\n    //Update game objects\n    ground.update(gameSpeed, frameTimeDelta);\n    cactiController.update(gameSpeed, frameTimeDelta);\n    player.update(gameSpeed, frameTimeDelta);"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 181,
-    "end_line": 200,
-    "content": "if (!gameOver && !waitingToStart) {\n    //Update game objects\n    ground.update(gameSpeed, frameTimeDelta);\n    cactiController.update(gameSpeed, frameTimeDelta);\n    player.update(gameSpeed, frameTimeDelta);\n    score.update(frameTimeDelta);\n    updateGameSpeed(frameTimeDelta);\n  }\n\n  if (!gameOver && cactiController.collideWith(player)) {\n    gameOver = true;\n    setupGameReset();\n    score.setHighScore();\n  }\n\n  //Draw game objects\n  ground.draw();\n  cactiController.draw();\n  player.draw();\n  score.draw();"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 196,
-    "end_line": 215,
-    "content": "//Draw game objects\n  ground.draw();\n  cactiController.draw();\n  player.draw();\n  score.draw();\n\n  if (gameOver) {\n    showGameOver();\n  }\n\n  if (waitingToStart) {\n    showStartGameText();\n  }\n\n  requestAnimationFrame(gameLoop);\n}\n\nrequestAnimationFrame(gameLoop);\n\nwindow.addEventListener(\"keyup\", reset, { once: true });"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/index.js",
-    "start_line": 211,
-    "end_line": 216,
-    "content": "}\n\nrequestAnimationFrame(gameLoop);\n\nwindow.addEventListener(\"keyup\", reset, { once: true });\nwindow.addEventListener(\"touchstart\", reset, { once: true });"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\nexport default class Player {\n  WALK_ANIMATION_TIMER = 200;\n  walkAnimationTimer = this.WALK_ANIMATION_TIMER;\n  dinoRunImages = [];\n\n  jumpPressed = false;\n  jumpInProgress = false;\n  falling = false;\n  JUMP_SPEED = 0.6;\n  GRAVITY = 0.4;\n\n  constructor(ctx, width, height, minJumpHeight, maxJumpHeight, scaleRatio) {\n    this.ctx = ctx;\n    this.canvas = ctx.canvas;\n    this.width = width;\n    this.height = height;\n    this.minJumpHeight = minJumpHeight;\n    this.maxJumpHeight = maxJumpHeight;\n    this.scaleRatio = scaleRatio;"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "this.width = width;\n    this.height = height;\n    this.minJumpHeight = minJumpHeight;\n    this.maxJumpHeight = maxJumpHeight;\n    this.scaleRatio = scaleRatio;\n\n    this.x = 10 * scaleRatio;\n    this.y = this.canvas.height - this.height - 1.5 * scaleRatio;\n    this.yStandingPosition = this.y;\n\n    this.standingStillImage = new Image();\n    this.standingStillImage.src = \"images/standing_still.png\";\n    this.image = this.standingStillImage;\n\n    const dinoRunImage1 = new Image();\n    dinoRunImage1.src = \"images/dino_run1.png\";\n\n    const dinoRunImage2 = new Image();\n    dinoRunImage2.src = \"images/dino_run2.png\";"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 31,
-    "end_line": 50,
-    "content": "dinoRunImage1.src = \"images/dino_run1.png\";\n\n    const dinoRunImage2 = new Image();\n    dinoRunImage2.src = \"images/dino_run2.png\";\n\n    this.dinoRunImages.push(dinoRunImage1);\n    this.dinoRunImages.push(dinoRunImage2);\n\n    //keyboard\n    window.removeEventListener(\"keydown\", this.keydown);\n    window.removeEventListener(\"keyup\", this.keyup);\n\n    window.addEventListener(\"keydown\", this.keydown);\n    window.addEventListener(\"keyup\", this.keyup);\n\n    //touch\n    window.removeEventListener(\"touchstart\", this.touchstart);\n    window.removeEventListener(\"touchend\", this.touchend);\n\n    window.addEventListener(\"touchstart\", this.touchstart);"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 46,
-    "end_line": 65,
-    "content": "//touch\n    window.removeEventListener(\"touchstart\", this.touchstart);\n    window.removeEventListener(\"touchend\", this.touchend);\n\n    window.addEventListener(\"touchstart\", this.touchstart);\n    window.addEventListener(\"touchend\", this.touchend);\n  }\n\n  touchstart = () => {\n    this.jumpPressed = true;\n  };\n\n  touchend = () => {\n    this.jumpPressed = false;\n  };\n\n  keydown = (event) => {\n    if (event.code === \"Space\") {\n      this.jumpPressed = true;\n    }"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 61,
-    "end_line": 80,
-    "content": "keydown = (event) => {\n    if (event.code === \"Space\") {\n      this.jumpPressed = true;\n    }\n  };\n\n  keyup = (event) => {\n    if (event.code === \"Space\") {\n      this.jumpPressed = false;\n    }\n  };\n\n  update(gameSpeed, frameTimeDelta) {\n    this.run(gameSpeed, frameTimeDelta);\n\n    if (this.jumpInProgress) {\n      this.image = this.standingStillImage;\n    }"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 76,
-    "end_line": 95,
-    "content": "if (this.jumpInProgress) {\n      this.image = this.standingStillImage;\n    }\n\n    this.jump(frameTimeDelta);\n  }\n\n  jump(frameTimeDelta) {\n    if (this.jumpPressed) {\n      this.jumpInProgress = true;\n    }\n\n    if (this.jumpInProgress && !this.falling) {\n      if (\n        this.y > this.canvas.height - this.minJumpHeight ||\n        (this.y > this.canvas.height - this.maxJumpHeight && this.jumpPressed)\n      ) {\n        this.y -= this.JUMP_SPEED * frameTimeDelta * this.scaleRatio;\n      } else {"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 91,
-    "end_line": 110,
-    "content": "this.y > this.canvas.height - this.minJumpHeight ||\n        (this.y > this.canvas.height - this.maxJumpHeight && this.jumpPressed)\n      ) {\n        this.y -= this.JUMP_SPEED * frameTimeDelta * this.scaleRatio;\n      } else {\n        this.falling = true;\n      }\n    } else {\n      if (this.y < this.yStandingPosition) {\n        this.y += this.GRAVITY * frameTimeDelta * this.scaleRatio;\n        if (this.y + this.height > this.canvas.height) {\n          this.y = this.yStandingPosition;\n        }\n      } else {\n        this.falling = false;\n        this.jumpInProgress = false;\n      }\n    }\n  }"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 106,
-    "end_line": 125,
-    "content": "this.jumpInProgress = false;\n      }\n    }\n  }\n\n  run(gameSpeed, frameTimeDelta) {\n    if (this.walkAnimationTimer <= 0) {\n      if (this.image === this.dinoRunImages[0]) {\n        this.image = this.dinoRunImages[1];\n      } else {\n        this.image = this.dinoRunImages[0];\n      }\n      this.walkAnimationTimer = this.WALK_ANIMATION_TIMER;\n    }\n    this.walkAnimationTimer -= frameTimeDelta * gameSpeed;\n  }\n\n  draw() {\n    this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);\n  }"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Player.js",
-    "start_line": 121,
-    "end_line": 126,
-    "content": "}\n\n  draw() {\n    this.ctx.drawImage(this.image, this.x, this.y, this.width, this.height);\n  }\n}"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/README.md",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "# Dino Game - Game Dev\n\n[<img src=\"cover.png\" width=\"80%\" >](https://youtu.be/ooru4pyEv1I)\n\n### YouTube Tutorial:\n\nhttps://youtu.be/ooru4pyEv1I\n\n### Try the game here:\n\nhttps://codingwith-adam.github.io/dino-game/index.html\n\n(On a mobile device play in landscape orientation for the best experience)\n\nIn this exciting tutorial we are going to build a clone of the chrome dinosaur game with Javascript and a HTML Canvas. This version of the game can be played on a touch screen or with a keyboard. The game will scale to fit on any size screen.\n\nThe goal of the game is for the dinosaur to avoid the obstacles by jumping over them. As the dinosaur runs along the desert it will encounter cactuses. If you don't jump over them it's game over. Our dino can perform a low or high jump. A low jump is achieved with a quick tap of the screen or quick press of the space bar. A high jump requires taping the screen longer or pressing the space bar longer.\n\n### We will cover the following topics and more:"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/README.md",
-    "start_line": 16,
-    "end_line": 29,
-    "content": "The goal of the game is for the dinosaur to avoid the obstacles by jumping over them. As the dinosaur runs along the desert it will encounter cactuses. If you don't jump over them it's game over. Our dino can perform a low or high jump. A low jump is achieved with a quick tap of the screen or quick press of the space bar. A high jump requires taping the screen longer or pressing the space bar longer.\n\n### We will cover the following topics and more:\n\n- Game loop\n- Animation\n- Collision detection\n- Scaling a game to fit to any size screen.\n- How to take into account different frame rates.\n- Randomly generating enemy sprites(cactuses)\n- and much more!\n\nIf you enjoy this tutorial please subscribe, like and share on YouTube."
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Score.js",
-    "start_line": 1,
-    "end_line": 20,
-    "content": "\"use client\"\nexport default class Score {\n  score = 0;\n  HIGH_SCORE_KEY = \"highScore\";\n\n  constructor(ctx, scaleRatio) {\n    this.ctx = ctx;\n    this.canvas = ctx.canvas;\n    this.scaleRatio = scaleRatio;\n  }\n\n  update(frameTimeDelta) {\n    this.score += frameTimeDelta * 0.01;\n  }\n\n  reset() {\n    this.score = 0;\n  }\n\n  setHighScore() {"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Score.js",
-    "start_line": 16,
-    "end_line": 35,
-    "content": "reset() {\n    this.score = 0;\n  }\n\n  setHighScore() {\n    const highScore = Number(localStorage.getItem(this.HIGH_SCORE_KEY));\n    if (this.score > highScore) {\n      localStorage.setItem(this.HIGH_SCORE_KEY, Math.floor(this.score));\n    }\n  }\n\n  draw() {\n    const highScore = Number(localStorage.getItem(this.HIGH_SCORE_KEY));\n    const y = 20 * this.scaleRatio;\n\n    const fontSize = 20 * this.scaleRatio;\n    this.ctx.font = `${fontSize}px serif`;\n    this.ctx.fillStyle = \"#525250\";\n    const scoreX = this.canvas.width - 75 * this.scaleRatio;\n    const highScoreX = scoreX - 125 * this.scaleRatio;"
-  },
-  {
-    "file": "./cloned_repo/src/design/dino-game-main/Score.js",
-    "start_line": 31,
-    "end_line": 43,
-    "content": "const fontSize = 20 * this.scaleRatio;\n    this.ctx.font = `${fontSize}px serif`;\n    this.ctx.fillStyle = \"#525250\";\n    const scoreX = this.canvas.width - 75 * this.scaleRatio;\n    const highScoreX = scoreX - 125 * this.scaleRatio;\n\n    const scorePadded = Math.floor(this.score).toString().padStart(6, 0);\n    const highScorePadded = highScore.toString().padStart(6, 0);\n\n    this.ctx.fillText(scorePadded, scoreX, y);\n    this.ctx.fillText(`HI ${highScorePadded}`, highScoreX, y);\n  }\n}"
-  },
-  {
-    "file": "./cloned_repo/src/lib/utils.ts",
-    "start_line": 1,
-    "end_line": 6,
-    "content": "import { clsx, type ClassValue } from \"clsx\"\nimport { twMerge } from \"tailwind-merge\"\n\nexport function cn(...inputs: ClassValue[]) {\n  return twMerge(clsx(inputs))\n}"
+    "content": "# Spotube"
   }
 ]

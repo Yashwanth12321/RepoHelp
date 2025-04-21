@@ -3,7 +3,7 @@ import git
 
 SUPPORTED_EXTENSIONS = {'.py', '.js', '.ts', '.java', '.md', '.txt', '.c', '.cpp','.tsx','.jsx','.rs','.go','.rb','.php','.swift','.kotlin'}
 
-def clone_repo(github_url: str, clone_path: str = "./cloned_repo") -> str:
+def clone_repo(github_url: str, clone_path: str = "./cloned_repo2") -> str:
     if os.path.exists(clone_path):
         print(f"[INFO] Removing old repo at {clone_path}")
         import shutil
