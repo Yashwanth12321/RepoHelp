@@ -47,3 +47,8 @@ python main.py
 
 embedding-> Gemini text-embedding-004 / ollama nomic-embed model
 Text generation-> gemini-2-flash / ollama mistral or llama
+
+
+# Note
+- very slow, maybe due to network latency from each embedding request from gemini or ollama(essentially http request) bigger the codebase, more chunks ,more requests  therefore longer it will take to embed. As well as text generation, a lot of optmizations required.
+- Rag is only implemented to get a feel of it, although it is not strictly required(cascade windsurf)
